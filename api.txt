@@ -1,0 +1,14 @@
+GET
+schedules/
+
+GET
+schedules/:id
+
+POST
+schedules/:id
+
+PUT
+schedules/:id
+
+DELETE
+schedules/:id
