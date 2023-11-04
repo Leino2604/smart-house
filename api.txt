@@ -1,14 +1,14 @@
 GET
-schedules/
+http://localhost:3000/schedules/
 
 GET
-schedules/:id
+http://localhost:3000/schedules/:id
 
 POST
-schedules/:id
+http://localhost:3000/schedules/:id
 
 PUT
-schedules/:id
+http://localhost:3000/schedules/:id
 
 DELETE
-schedules/:id
+http://localhost:3000/schedules/:id
