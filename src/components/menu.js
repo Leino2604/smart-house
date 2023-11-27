@@ -28,7 +28,10 @@ const menuBarStyle = StyleSheet.create({
         alignItems: "center",
         justifyContent: "space-between",
         flexDirection: "row",
-        marginLeft: "12.82%"
+        marginLeft: "12.82%",
+        // position: 'absolute',
+        // bottom: 0,
+        // left: 0,
     }
 });
 

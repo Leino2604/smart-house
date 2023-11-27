@@ -20,17 +20,15 @@ const scheduleSchema = new mongoose.Schema({
   fan: {
     type: Number,
     required: true,
-    enum: [0, 1, 2, 3]
+    enum: [0, 1, 2, 3, 4, 5]
   },
   light: {
-    type: Number,
+    type: Boolean,
     required: true,
-    enum: [0, 1]
   },
   notification: {
-    type: Number,
+    type: Boolean,
     required: true,
-    enum: [0, 1]
   }
 });
 
