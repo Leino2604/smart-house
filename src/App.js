@@ -6,6 +6,8 @@ import EditScheduleScreen from "./screens/editSchedule";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
 
+import ThresholdModal from "./components/thresholdModal";
+
 const Stack = createStackNavigator();
 
 export default function App() {
@@ -21,7 +23,7 @@ export default function App() {
 					/>
 				</Stack.Navigator>
 			</NavigationContainer> */}
-      <HomeScreen />
+      		<HomeScreen />
 			<StatusBar style="auto" />
 		</View>
 	);
