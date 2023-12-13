@@ -25,7 +25,7 @@ const HomeScreen = () => {
 	const fetchData = async (url, setDataFunction) => {
 		try {
 			const headers = {
-				"X-AIO-Key": "aio_ysmK80qS5jGKtt1O3gcVcFmityd3",
+				"X-AIO-Key": "aio_TUVE91jHx4brvdbZ36a9P82TnYTV",
 				"Content-Type": "application/json",
 			};
 
