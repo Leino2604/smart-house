@@ -7,6 +7,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
 
 import ThresholdModal from "./components/thresholdModal";
+import ThresholdScreen from "./screens/thresholdScreen";
 
 const Stack = createStackNavigator();
 
@@ -23,7 +24,8 @@ export default function App() {
 					/>
 				</Stack.Navigator>
 			</NavigationContainer> */}
-      		<HomeScreen />
+      		{/* <HomeScreen /> */}
+			<ThresholdScreen />
 			<StatusBar style="auto" />
 		</View>
 	);
