@@ -16,7 +16,7 @@ const scheduleSchema = new mongoose.Schema({
 	repeat: {
 		type: [String],
 		required: true,
-    enum: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+		enum: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
 	},
 	fanDevice: {
 		type: String,

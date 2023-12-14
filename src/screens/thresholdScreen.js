@@ -6,36 +6,42 @@ import axios from "axios";
 
 const BACKEND_API = "https://smart-house-api.onrender.com";
 
+
 const ThresholdCard = () => {};
 
 const ThresholdScreen = () => {
 	const [data, setData] = useState([]);
+	
+	// Function to fetch data from the API
+	const fetchThresholdData = async () => {
+		try {
+			const response = await axios.get(`${BACKEND_API}/thresholds`);
+			const thresholds = response.data;
+			setData(thresholds);
+			console.log(data);
+		} catch (error) {
+			if (error.response) {
+				console.error("Server responded with an error:", error.response.status, error.response.data);
+			} else if (error.request) {
+				console.error("No response received from the server");
+			} else {
+				console.error("Error setting up the request:", error.message);
+			}
+		}
+	};
 
-	const fetchData = async () => {
-        try {
-            const response = await axios.get(`${BACKEND_API}/thresholds`);
-            const thresholds = response.data;
-            setData(thresholds);
-            console.log(data);
-        } catch (error) {
-            if (error.response) {
-                // The request was made, but the server responded with a status code other than 2xx
-                console.error("Server responded with an error:", error.response.status, error.response.data);
-            } else if (error.request) {
-                // The request was made but no response was received
-                console.error("No response received from the server");
-            } else {
-                // Something happened in setting up the request that triggered an Error
-                console.error("Error setting up the request:", error.message);
-            }
-        }
-    };
-    
+	useEffect(() => {
+		const fetchData = async () => {
+			fetchThresholdData();
+		};
 
-    useEffect(() => {
-        fetchData();
-    }, []); // Empty dependency array ensures data is fetched only once on mount
-      
+		fetchData(); // Initial fetch
+
+		const interval = setInterval(fetchData, 3000);
+
+		// Clean up interval on component unmount
+		return () => clearInterval(interval);
+	}, []);
 
 	return (
 		<View style={style.main}>
@@ -46,13 +52,14 @@ const ThresholdScreen = () => {
 				</Pressable>
 			</View>
 			<ScrollView>
-				{data && data.map((item) => {
-					console.log(item);
-					if (data[0] == undefined || data == undefined) return <Text>No threshold set</Text>;
-                    else {
-                        // 
-                    }
-				})}
+				{data &&
+					data.map((item) => {
+						console.log(item);
+						if (data[0] == undefined || data == undefined) return <Text>No threshold set</Text>;
+						else {
+							//
+						}
+					})}
 			</ScrollView>
 			<View>
 				<Text>SIUUU</Text>

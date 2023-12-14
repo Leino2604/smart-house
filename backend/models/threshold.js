@@ -47,6 +47,11 @@ const thresholdSchema = new mongoose.Schema({
 		required: true,
 		default: 0,
 	},
+	active: {
+		type: Boolean,
+		required: true,
+		default: true,
+	},
 });
 
 const Threshold = mongoose.model("Threshold", thresholdSchema);
@@ -64,3 +69,4 @@ module.exports = Threshold;
 // humid: 0.0,
 // distaceSensor: "",
 // distance: 0,
+// active: true,
