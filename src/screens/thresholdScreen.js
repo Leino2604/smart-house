@@ -6,58 +6,86 @@ import axios from "axios";
 
 const BACKEND_API = "https://smart-house-api.onrender.com";
 
+// https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/light-switch/data
+// https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/fan-speed/data
+
 const ThresholdCard = () => {};
 
 const ThresholdScreen = () => {
 	const [data, setData] = useState([]);
+	const [distanceOld, setDistanceOld] = useState(0.0);
+	const [distanceNew, setDistanceNew] = useState(0.0);
 
-	const fetchData = async () => {
-        try {
-            const response = await axios.get(`${BACKEND_API}/thresholds`);
-            const thresholds = response.data;
-            setData(thresholds);
-            console.log(data);
-        } catch (error) {
-            if (error.response) {
-                // The request was made, but the server responded with a status code other than 2xx
-                console.error("Server responded with an error:", error.response.status, error.response.data);
-            } else if (error.request) {
-                // The request was made but no response was received
-                console.error("No response received from the server");
-            } else {
-                // Something happened in setting up the request that triggered an Error
-                console.error("Error setting up the request:", error.message);
-            }
-        }
-    };
-    
+	// Function to fetch data from the API
+	const fetchTempDistanceData = async () => {
+		try {
+			const headers = {
+				"X-AIO-Key": "aio_NJsU20FtltbbgXxgqiTSCIBjmEpT",
+				"Content-Type": "application/json",
+			};
 
-    useEffect(() => {
-        fetchData();
-    }, []); // Empty dependency array ensures data is fetched only once on mount
-      
+			const response = await axios.get(`https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.distance`, { headers });
+			setDistanceNew(response.data.value);
+			console.log(response.data.value);
+		} catch (error) {
+			console.error("Error fetching data:", error);
+		}
+	};
+
+	const fetchThresholdData = async () => {
+		try {
+			const response = await axios.get(`${BACKEND_API}/thresholds`);
+			const thresholds = response.data;
+			setData(thresholds);
+			console.log(data);
+		} catch (error) {
+			if (error.response) {
+				console.error("Server responded with an error:", error.response.status, error.response.data);
+			} else if (error.request) {
+				console.error("No response received from the server");
+			} else {
+				console.error("Error setting up the request:", error.message);
+			}
+		}
+	};
+
+	useEffect(() => {
+		const fetchData = async () => {
+			await fetchTempDistanceData();
+			setDistanceOld(distanceNew); // Update distanceOld with the previous value of distanceNew
+			fetchThresholdData();
+		};
+
+		fetchData(); // Initial fetch
+
+		const interval = setInterval(fetchData, 3000);
+
+		// Clean up interval on component unmount
+		return () => clearInterval(interval);
+	}, [distanceNew]); // Re-run the effect when distanceNew changes
 
 	return (
-		<View style={style.main}>
-			<View style={style.head}>
-				<Text style={style.head.title}>Thresholds</Text>
-				<Pressable style={style.head.addButtonContainer}>
-					<Text style={style.head.addButtonContainer.buttonLabel}>Add</Text>
-				</Pressable>
-			</View>
-			<ScrollView>
-				{data && data.map((item) => {
-					console.log(item);
-					if (data[0] == undefined || data == undefined) return <Text>No threshold set</Text>;
-                    else {
-                        // 
-                    }
-				})}
-			</ScrollView>
-			<View>
-				<Text>SIUUU</Text>
-			</View>
-		</View>
+		// <View style={style.main}>
+		// 	<View style={style.head}>
+		// 		<Text style={style.head.title}>Thresholds</Text>
+		// 		<Pressable style={style.head.addButtonContainer}>
+		// 			<Text style={style.head.addButtonContainer.buttonLabel}>Add</Text>
+		// 		</Pressable>
+		// 	</View>
+		// 	<ScrollView>
+		// 		{data &&
+		// 			data.map((item) => {
+		// 				console.log(item);
+		// 				if (data[0] == undefined || data == undefined) return <Text>No threshold set</Text>;
+		// 				else {
+		// 					//
+		// 				}
+		// 			})}
+		// 	</ScrollView>
+		// 	<View>
+		// 		<Text>SIUUU</Text>
+		// 	</View>
+		// </View>
 	);
 };
 
