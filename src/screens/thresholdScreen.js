@@ -6,32 +6,13 @@ import axios from "axios";
 
 const BACKEND_API = "https://smart-house-api.onrender.com";
 
-// https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/light-switch/data
-// https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/fan-speed/data
 
 const ThresholdCard = () => {};
 
 const ThresholdScreen = () => {
 	const [data, setData] = useState([]);
-	const [distanceOld, setDistanceOld] = useState(0.0);
-	const [distanceNew, setDistanceNew] = useState(0.0);
-
+	
 	// Function to fetch data from the API
-	const fetchTempDistanceData = async () => {
-		try {
-			const headers = {
-				"X-AIO-Key": "aio_NJsU20FtltbbgXxgqiTSCIBjmEpT",
-				"Content-Type": "application/json",
-			};
-
-			const response = await axios.get(`https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.distance`, { headers });
-			setDistanceNew(response.data.value);
-			console.log(response.data.value);
-		} catch (error) {
-			console.error("Error fetching data:", error);
-		}
-	};
-
 	const fetchThresholdData = async () => {
 		try {
 			const response = await axios.get(`${BACKEND_API}/thresholds`);
@@ -51,8 +32,6 @@ const ThresholdScreen = () => {
 
 	useEffect(() => {
 		const fetchData = async () => {
-			await fetchTempDistanceData();
-			setDistanceOld(distanceNew); // Update distanceOld with the previous value of distanceNew
 			fetchThresholdData();
 		};
 
@@ -62,30 +41,30 @@ const ThresholdScreen = () => {
 
 		// Clean up interval on component unmount
 		return () => clearInterval(interval);
-	}, [distanceNew]); // Re-run the effect when distanceNew changes
+	}, []);
 
 	return (
-		// <View style={style.main}>
-		// 	<View style={style.head}>
-		// 		<Text style={style.head.title}>Thresholds</Text>
-		// 		<Pressable style={style.head.addButtonContainer}>
-		// 			<Text style={style.head.addButtonContainer.buttonLabel}>Add</Text>
-		// 		</Pressable>
-		// 	</View>
-		// 	<ScrollView>
-		// 		{data &&
-		// 			data.map((item) => {
-		// 				console.log(item);
-		// 				if (data[0] == undefined || data == undefined) return <Text>No threshold set</Text>;
-		// 				else {
-		// 					//
-		// 				}
-		// 			})}
-		// 	</ScrollView>
-		// 	<View>
-		// 		<Text>SIUUU</Text>
-		// 	</View>
-		// </View>
+		<View style={style.main}>
+			<View style={style.head}>
+				<Text style={style.head.title}>Thresholds</Text>
+				<Pressable style={style.head.addButtonContainer}>
+					<Text style={style.head.addButtonContainer.buttonLabel}>Add</Text>
+				</Pressable>
+			</View>
+			<ScrollView>
+				{data &&
+					data.map((item) => {
+						console.log(item);
+						if (data[0] == undefined || data == undefined) return <Text>No threshold set</Text>;
+						else {
+							//
+						}
+					})}
+			</ScrollView>
+			<View>
+				<Text>SIUUU</Text>
+			</View>
+		</View>
 	);
 };
 
