@@ -1,14 +1,33 @@
+SCHEDULES
 GET
-http://localhost:3000/schedules/
+https://smart-house-api.onrender.com/schedules
 
 GET
-http://localhost:3000/schedules/:id
+https://smart-house-api.onrender.com/schedules/:id
 
 POST
-http://localhost:3000/schedules/:id
+https://smart-house-api.onrender.com/schedules
 
 PUT
-http://localhost:3000/schedules/:id
+https://smart-house-api.onrender.com/schedules/:id
 
 DELETE
-http://localhost:3000/schedules/:id
+https://smart-house-api.onrender.com/schedules/:id
+
+----------------------------------------------------
+
+THRESHOLDS
+GET
+https://smart-house-api.onrender.com/thresholds
+
+GET
+https://smart-house-api.onrender.com/thresholds/:id
+
+POST
+https://smart-house-api.onrender.com/thresholds
+
+PUT
+https://smart-house-api.onrender.com/thresholds/:id
+
+DELETE
+https://smart-house-api.onrender.com/thresholds/:id
