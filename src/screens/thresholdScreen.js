@@ -3,7 +3,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 import React, { useState, useEffect } from "react";
 import ThresholdModal from "../components/thresholdModal";
 import axios from "axios";
-import BACKEND_API from "env"
+
+const BACKEND_API = "https://smart-house-api.onrender.com";
 
 const ThresholdCard = () => {};
 
@@ -11,14 +12,25 @@ const ThresholdScreen = () => {
 	const [data, setData] = useState([]);
 
 	const fetchData = async () => {
-		try {
-			const response = await axios.get(`${BACKEND_API}/thresholds`);
-			const thresholds = response.data;
-			setData(thresholds);
-		} catch (error) {
-			console.error(error);
-		}
-	};
+        try {
+            const response = await axios.get(`${BACKEND_API}/thresholds`);
+            const thresholds = response.data;
+            setData(thresholds);
+            console.log(data);
+        } catch (error) {
+            if (error.response) {
+                // The request was made, but the server responded with a status code other than 2xx
+                console.error("Server responded with an error:", error.response.status, error.response.data);
+            } else if (error.request) {
+                // The request was made but no response was received
+                console.error("No response received from the server");
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                console.error("Error setting up the request:", error.message);
+            }
+        }
+    };
+    
 
     useEffect(() => {
         fetchData();
@@ -34,11 +46,11 @@ const ThresholdScreen = () => {
 				</Pressable>
 			</View>
 			<ScrollView>
-				{data.map((item) => {
+				{data && data.map((item) => {
 					console.log(item);
 					if (data[0] == undefined || data == undefined) return <Text>No threshold set</Text>;
                     else {
-                        console.log(data);
+                        // 
                     }
 				})}
 			</ScrollView>

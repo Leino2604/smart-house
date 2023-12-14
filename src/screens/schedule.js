@@ -14,6 +14,8 @@ import MenuBar from "../components/menu";
 import ToggleSwitch from "../components/ToggleSwitch";
 import { useNavigation } from "@react-navigation/native";
 
+const BACKEND_API = "https://smart-house-api.onrender.com/";
+
 const ScheduleScreen = () => {
 	// const navigation = useNavigation();
 
