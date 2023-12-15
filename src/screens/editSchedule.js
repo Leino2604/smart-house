@@ -1,21 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
 	View,
 	StyleSheet,
-	Image,
 	Text,
-	Switch,
-	Button,
 	TouchableOpacity,
 	Modal,
-	Pressable,
+	Alert,
 } from "react-native";
 import {LinearGradient} from "expo-linear-gradient";
 import Slider from "@react-native-community/slider";
 import ToggleSwitch from "../components/ToggleSwitch";
 import { StatusBar } from "expo-status-bar";
-import { Calendar, LocaleConfig } from "react-native-calendars";
-
+import { Calendar } from "react-native-calendars";
 import FanIcon from "../components/fanIcon";
 import LightBulbIcon from "../components/lightBulbIcon";
 import MenuBar from "../components/menu";
@@ -24,8 +20,8 @@ import TopArrowIcon from "../components/topArrowIcon";
 import BottomArrowIcon from "../components/bottomArrowIcon"
 
 const EditScheduleScreen = () => {
+	/* Used to config calendar */
 	const TODAY = new Date(2023, 11, 30);
-
 	const weekDay = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 	const [smartLightEnabled, setSmartLightEnabled] = useState(false);
 	const [notificationEnabled, setNotificationEnabled] = useState(false);
@@ -44,8 +40,14 @@ const EditScheduleScreen = () => {
 		setCalendarPicked((prevState) => !prevState);
 	}
 
-	function pickDateOnCalendarPicker(date) {
-		setSelectedDate(date);
+	function pressCloseCalendarButton() {
+		console.log(calendarPicked)
+		setCalendarPicked(false);
+	}
+
+	function pressCloseCalendarAgain() {
+		Alert.alert("Calendar has been close");
+		setCalendarPicked((prevState) => !prevState);
 	}
 
 	function getStringOfDate(date) {
@@ -57,14 +59,18 @@ const EditScheduleScreen = () => {
 
 	/* Used to decorate date on calendar */
 	const selectedDateStr = getStringOfDate(selectedDate);
-	console.log(selectedDateStr);
 	const markedDateOnCalendar = {
 		"2024-01-01": {marked: true},
 		[selectedDateStr]: {selected: true}
 	}
 
+	/* Used to detect touch outside to close calendar */
+	
+
 	return (	
-		<View style={editScheduleScreenViewStyle.container}>
+		<View 
+			style={editScheduleScreenViewStyle.container}
+		>
 			<LinearGradient 
 				style={editScheduleViewStyle.container}
 				colors={["#004282", "#5899e2"]}
@@ -97,31 +103,40 @@ const EditScheduleScreen = () => {
 							Day: Friday, October 27
 						</Text>
 						<Modal
-							animationType="fade"
+							animationType="slide"
 							visible={calendarPicked}
 							transparent={true}
-						>
+							onRequestClose={pressCloseCalendarAgain}
+        				>
 							<Calendar 
 								style={calendarPickerStyle.container}
 								theme={{
 									backgroundColor: "#FFFFFF",
-									calendarBackground: "#FFFFFF",
+									calendarBackground: "#121212",
 									textSectionTitleColor: "#b6c1cd",
 									
 									selectedDayBackgroundColor: "#00adf5",
 									selectedDayTextColor: "#FFFFFF",
 									todayTextColor: '#00adf5',
-									dayTextColor: "#2d4150",
-									textDisabledColor: "#DE9E"
+									dayTextColor: "#E5E5E5",
+									monthTextColor: "#E5E5E5",
+									textDisabledColor: "#2d4150"
 								}}
+								firstDay={1}
+								enableSwipeMonths={true}
 								minDate="2023-12-01"
 								maxDate="2024-12-31"
 								markedDates={markedDateOnCalendar}
 							/>
+							<TouchableOpacity
+								style={calendarPickerStyle.closeButton}
+								onPress={pressCloseCalendarButton}
+							>
+								<Text style={calendarPickerStyle.closeButtonText}>Close</Text>
+							</TouchableOpacity>
 						</Modal>
 						<TouchableOpacity
 							onPress={pressCalendarIcon}
-							
 						>
 							<CalendarIcon/>
 						</TouchableOpacity>
@@ -234,14 +249,15 @@ const EditScheduleScreen = () => {
 					</LinearGradient>
 					
 					<LinearGradient
-							colors={["rgba(98, 210, 141, 0.88)", "rgba(234, 245, 45, 0.79)"]}
-							start={{x: 0, y: 0}}
-							locations={[0.112, 0.88]}
-							
-							end={{x: 1, y: 0}}
-							style={saveButtonStyle.linearGradient}
+						colors={["rgba(98, 210, 141, 0.88)", "rgba(234, 245, 45, 0.79)"]}
+						start={{x: 0, y: 0}}
+						locations={[0.112, 0.88]}
+						end={{x: 1, y: 0}}
+						style={saveButtonStyle.linearGradient}
 					>
-						<TouchableOpacity style={saveButtonStyle.container}>
+						<TouchableOpacity 
+							style={saveButtonStyle.container}
+						>
 							<Text style={saveButtonStyle.text}>Save</Text>
 						</TouchableOpacity>
 					</LinearGradient>
@@ -509,15 +525,32 @@ const saveButtonStyle = StyleSheet.create({
 const calendarPickerStyle = StyleSheet.create({
 	container: {
 		width: "100%",
-		height: "40%",
-		marginTop: "72%",
+		marginTop: "111.5%",
 		borderRadius: 10,
 		borderWidth: 1,
-		borderColor: "#808080"
+		borderColor: "#808080",
 	},
 	closeButton: {
+		width: "100%",
+		height: "5%",
+		marginTop: "3%",
+		backgroundColor: "rgb(63, 76, 119)",
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "center",
+		borderRadius: 10,
+		borderWidth: 1,
+		borderColor: "#FFFFFF",
 
+	},
+	closeButtonText: {
+		fontSize: 20,
+		color: "#E5E5E5",
+
+	},
+	header: {
+		fontStyle: "italic"
 	}
-})
+});
 
 export default EditScheduleScreen;
