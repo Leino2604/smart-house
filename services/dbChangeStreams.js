@@ -1,3 +1,4 @@
+//Might not need to use
 const { MongoClient } = require('mongodb');
 
 const connectToMongoDB = async (uri, dbName, collectionName, onChange) => {
