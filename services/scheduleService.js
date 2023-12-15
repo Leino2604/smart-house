@@ -1,6 +1,6 @@
 //Will send data to adafruit feed to trigger when a time occured
 const axios = require("axios");
-const aio_key = "aio_igiG69DzU9ILrWqsZ7KWswxdikvb";
+const aio_key = "aio_pUIZ51qAjbLsUnFexeGSoZw4RZIa";
 
 const BACKEND_API = "https://smart-house-api.onrender.com";
 let scheduleData = [];
@@ -60,6 +60,10 @@ const fetchScheduleData = async () => {
 		const response = await axios.get(`${BACKEND_API}/schedules`);
 		const schedules = response.data;
 		scheduleData = schedules;
+		// for (const item of scheduleData) {
+		// 	console.log("Item: ", item);
+		// 	console.log("-----------");
+		// }
 		return scheduleData;
 	} catch (error) {
 		handleError(error);
@@ -80,6 +84,7 @@ const triggerSchedule = () => {
 	const checkSchedules = async () => {
 		if (isCooldown) return;
 
+        scheduleData = [];
         await fetchScheduleData();
 
 		const currentTime = new Date();
@@ -92,7 +97,7 @@ const triggerSchedule = () => {
 		// console.log(currentTime.getFullYear());
 		// console.log("----------------------");
 
-		for (const schedule of scheduleData[0]) {
+		for (const schedule of scheduleData) {
 			const scheduleTime = new Date(schedule.date);
 
 			// console.log(schedule.hour);
@@ -108,7 +113,7 @@ const triggerSchedule = () => {
 				currentTime.getDate() === scheduleTime.getDate() &&
 				currentTime.getMonth() === scheduleTime.getMonth() &&
 				currentTime.getFullYear() === scheduleTime.getFullYear()
-				// && schedule.repeat.includes(getDayOfWeek(currentTime.getDay()))   Sẽ quay lại tính sau
+				// && schedule.repeat.includes(getDayOfWeek(currentTime.getDay()))   Sẽ quay lại tính
 			) {
 				console.log("Schedule triggered. Id: ", schedule["_id"]);
                 // Start cooldown
@@ -138,12 +143,14 @@ const triggerSchedule = () => {
 // sendFanData("fan-speed", 100);
 // sendLightData("light-switch", 0);
 
-const runScript = async () => {
-	await fetchScheduleData();
-	triggerSchedule();
-};
+// const runScript = async () => {
+// 	await fetchScheduleData();
+// 	triggerSchedule();
+// };
 
-runScript();
+// runScript();
+
+triggerSchedule();
 
 //Always be the last in code
 process.on("SIGINT", () => {
