@@ -21,6 +21,10 @@ const thresholdSchema = new mongoose.Schema({
 		type: String,
 		default: "",
 	},
+	pirSensor: {
+		type: String,
+		default: "",
+	},
 	fanSpeed: {
 		type: Number,
 		required: true,
@@ -46,6 +50,10 @@ const thresholdSchema = new mongoose.Schema({
 		type: Number,
 		required: true,
 		default: 0,
+	},
+	presented: {
+		type: Boolean,
+		default: false,
 	},
 	active: {
 		type: Boolean,
