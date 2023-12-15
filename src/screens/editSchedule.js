@@ -7,19 +7,31 @@ import {
 	Switch,
 	Button,
 	TouchableOpacity,
+	Modal,
+	Pressable,
 } from "react-native";
-import MenuBar from "../components/menu";
+import {LinearGradient} from "expo-linear-gradient";
+import Slider from "@react-native-community/slider";
+import ToggleSwitch from "../components/ToggleSwitch";
 import { StatusBar } from "expo-status-bar";
+import { Calendar, LocaleConfig } from "react-native-calendars";
 
 import FanIcon from "../components/fanIcon";
 import LightBulbIcon from "../components/lightBulbIcon";
-import Slider from "@react-native-community/slider";
-import ToggleSwitch from "../components/ToggleSwitch";
+import MenuBar from "../components/menu";
+import CalendarIcon from "../components/calendarIcon";
+import TopArrowIcon from "../components/topArrowIcon";
+import BottomArrowIcon from "../components/bottomArrowIcon"
 
 const EditScheduleScreen = () => {
+	const TODAY = new Date(2023, 11, 30);
+
 	const weekDay = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 	const [smartLightEnabled, setSmartLightEnabled] = useState(false);
 	const [notificationEnabled, setNotificationEnabled] = useState(false);
+	const [calendarPicked, setCalendarPicked] = useState(false);
+	const [selectedDate, setSelectedDate] = useState(TODAY);
+	
 	function toggleSmartLightSwitch() {
 		setSmartLightEnabled((preState) => !preState);
 	}
@@ -27,23 +39,44 @@ const EditScheduleScreen = () => {
 	function toggleNotificationEnabledSwitch() {
 		setNotificationEnabled((prevState) => !prevState);
 	}
-	return (
+
+	function pressCalendarIcon() {
+		setCalendarPicked((prevState) => !prevState);
+	}
+
+	function pickDateOnCalendarPicker(date) {
+		setSelectedDate(date);
+	}
+
+	function getStringOfDate(date) {
+		const day = (date.getDate() >= 10) ? date.getDate().toString() : "0" + date.getDate().toString();
+		const month = (date.getMonth() >= 10) ? date.getMonth().toString() : "0" + date.getMonth().toString();
+		const year = date.getFullYear().toString();
+		return year + "-" + month + "-" + day;
+	}
+
+	/* Used to decorate date on calendar */
+	const selectedDateStr = getStringOfDate(selectedDate);
+	console.log(selectedDateStr);
+	const markedDateOnCalendar = {
+		"2024-01-01": {marked: true},
+		[selectedDateStr]: {selected: true}
+	}
+
+	return (	
 		<View style={editScheduleScreenViewStyle.container}>
-			<View style={editScheduleViewStyle.container}>
+			<LinearGradient 
+				style={editScheduleViewStyle.container}
+				colors={["#004282", "#5899e2"]}
+			>
 				<StatusBar />
 
 				<View style={topArrowIconViewStyle.container}>
 					<TouchableOpacity>
-						<Image
-							source={require("../assets/top_arrow_icon.png")}
-							style={topArrowIconStyle.container}
-						/>
+						<TopArrowIcon />
 					</TouchableOpacity>
 					<TouchableOpacity>
-						<Image
-							source={require("../assets/top_arrow_icon.png")}
-							style={topArrowIconStyle.container}
-						/>
+						<TopArrowIcon />
 					</TouchableOpacity>
 				</View>
 
@@ -51,16 +84,10 @@ const EditScheduleScreen = () => {
 
 				<View style={bottomArrowIconViewStyle.container}>
 					<TouchableOpacity>
-						<Image
-							source={require("../assets/bottom_arrow_icon.png")}
-							style={bottomArrowIconStyle.container}
-						/>
+						<BottomArrowIcon />
 					</TouchableOpacity>
 					<TouchableOpacity>
-						<Image
-							source={require("../assets/bottom_arrow_icon.png")}
-							style={bottomArrowIconStyle.container}
-						/>
+						<BottomArrowIcon />
 					</TouchableOpacity>
 				</View>
 
@@ -69,10 +96,35 @@ const EditScheduleScreen = () => {
 						<Text style={dayTextStyle.container}>
 							Day: Friday, October 27
 						</Text>
-						<Image
-							source={require("../assets/calendar_icon.png")}
-							style={calendarIconStyle.container}
-						/>
+						<Modal
+							animationType="fade"
+							visible={calendarPicked}
+							transparent={true}
+						>
+							<Calendar 
+								style={calendarPickerStyle.container}
+								theme={{
+									backgroundColor: "#FFFFFF",
+									calendarBackground: "#FFFFFF",
+									textSectionTitleColor: "#b6c1cd",
+									
+									selectedDayBackgroundColor: "#00adf5",
+									selectedDayTextColor: "#FFFFFF",
+									todayTextColor: '#00adf5',
+									dayTextColor: "#2d4150",
+									textDisabledColor: "#DE9E"
+								}}
+								minDate="2023-12-01"
+								maxDate="2024-12-31"
+								markedDates={markedDateOnCalendar}
+							/>
+						</Modal>
+						<TouchableOpacity
+							onPress={pressCalendarIcon}
+							
+						>
+							<CalendarIcon/>
+						</TouchableOpacity>
 					</View>
 
 					<View style={weekDayViewStyle.container}>
@@ -88,7 +140,13 @@ const EditScheduleScreen = () => {
 				</View>
 
 				<View style={equipmentLevelChangeViewStyle.container}>
-					<View style={smartFanLevelChangeViewStyle.container}>
+					<LinearGradient 
+						style={smartFanLevelChangeViewStyle.container}
+						colors={["rgb(63, 76, 119)","rgb(32, 38, 57)"]}
+						locations={[0.114, 0.702]}
+						start={{x: 0, y: 0}}
+						end={{x: 1, y: 0}}
+					>
 						<FanIcon />
 						<Text style={smartFanLevelChangeTextStyle.container}>
 							Smart fan
@@ -97,11 +155,18 @@ const EditScheduleScreen = () => {
 							style={smartFanLevelChangeSliderStyle.container}
 							minimumValue={0}
 							maximumValue={100}
-                            // interval={20}
+							// interval={20}
 							thumbTintColor={"#006A64"}
 						/>
-					</View>
-					<View style={smartLightChangeViewStyle.container}>
+					</LinearGradient>
+
+					<LinearGradient 
+						style={smartLightChangeViewStyle.container}
+						colors={["rgb(63, 76, 119)","rgb(32, 38, 57)"]}
+						locations={[0.114, 0.702]}
+						start={{x: 0, y: 0}}
+						end={{x: 1, y: 0}}
+					>
 						<LightBulbIcon />
 						<Text style={smartLightChangeTextStyle.container}>
 							Smart light
@@ -127,7 +192,7 @@ const EditScheduleScreen = () => {
 							activeText={"On"}
 							inActiveText={"Off"}
 						/>
-					</View>
+					</LinearGradient>
 				</View>
 
 				<View style={notificationChangeView.container}>
@@ -155,15 +220,33 @@ const EditScheduleScreen = () => {
 					/>
 				</View>
 				<View style={buttonsViewStyle.container}>
-					<TouchableOpacity style={cancelButtonStyle.container}>
-						<Text style={cancelButtonStyle.text}>Cancel</Text>
-					</TouchableOpacity>
-
-					<TouchableOpacity style={saveButtonStyle.container}>
-						<Text style={saveButtonStyle.text}>Save</Text>
-					</TouchableOpacity>
+					<LinearGradient
+							colors={["rgba(98, 210, 141, 0.88)", "rgba(234, 245, 45, 0.79)"]}
+							start={{x: 0, y: 0}}
+							locations={[0.112, 0.88]}
+							
+							end={{x: 1, y: 0}}
+							style={cancelButtonStyle.linearGradient}
+					>
+						<TouchableOpacity style={cancelButtonStyle.container}>
+							<Text style={cancelButtonStyle.text}>Cancel</Text>
+						</TouchableOpacity>
+					</LinearGradient>
+					
+					<LinearGradient
+							colors={["rgba(98, 210, 141, 0.88)", "rgba(234, 245, 45, 0.79)"]}
+							start={{x: 0, y: 0}}
+							locations={[0.112, 0.88]}
+							
+							end={{x: 1, y: 0}}
+							style={saveButtonStyle.linearGradient}
+					>
+						<TouchableOpacity style={saveButtonStyle.container}>
+							<Text style={saveButtonStyle.text}>Save</Text>
+						</TouchableOpacity>
+					</LinearGradient>
 				</View>
-			</View>
+			</LinearGradient>
 			<MenuBar />
 		</View>
 	);
@@ -174,19 +257,18 @@ const editScheduleScreenViewStyle = StyleSheet.create({
 		display: "flex",
 		flexDirection: "column",
 		width: "100%",
-		height: "100%",
-		gap: 50,
+		height: "100%"
 	},
 });
 
 const editScheduleViewStyle = StyleSheet.create({
 	container: {
-		backgroundColor: "#246EE9",
 		borderBottomLeftRadius: 20,
 		borderBottomRightRadius: 20,
-		height: "89.22%",
+		// height: "89.22%",
+		height: "93%",
 		width: "100%",
-	},
+	}
 });
 
 const topArrowIconViewStyle = StyleSheet.create({
@@ -208,19 +290,6 @@ const bottomArrowIconViewStyle = StyleSheet.create({
 	},
 });
 
-const topArrowIconStyle = StyleSheet.create({
-	container: {
-		width: 48,
-		height: 48,
-	},
-});
-
-const bottomArrowIconStyle = StyleSheet.create({
-	container: {
-		width: 48,
-		height: 48,
-	},
-});
 
 const timeViewStyle = StyleSheet.create({
 	container: {
@@ -293,8 +362,8 @@ const smartFanLevelChangeViewStyle = StyleSheet.create({
 	container: {
 		width: "89.74%",
 		height: "46.94%",
-		backgroundColor: "#FFFFFF",
 		borderStyle: "solid",
+		borderColor: "#FFFFFF",
 		borderRadius: 10,
 		display: "flex",
 		flexDirection: "row",
@@ -307,7 +376,7 @@ const smartFanLevelChangeViewStyle = StyleSheet.create({
 const smartFanLevelChangeTextStyle = StyleSheet.create({
 	container: {
 		fontSize: 16,
-		color: "#000000",
+		color: "#FFFFFF"
 	},
 });
 
@@ -322,7 +391,6 @@ const smartLightChangeViewStyle = StyleSheet.create({
 	container: {
 		width: "89.74%",
 		height: "43.88%",
-		backgroundColor: "#FFFFFF",
 		borderStyle: "solid",
 		borderRadius: 10,
 		display: "flex",
@@ -336,7 +404,7 @@ const smartLightChangeViewStyle = StyleSheet.create({
 const smartLightChangeTextStyle = StyleSheet.create({
 	container: {
 		fontSize: 16,
-		color: "#000000",
+		color: "#FFFFFF"
 	},
 });
 
@@ -396,15 +464,14 @@ const buttonsViewStyle = StyleSheet.create({
 		flexDirection: "row",
 		gap: 33,
 		marginTop: "4.91%",
-		marginLeft: "34.87%",
+		marginLeft: "30%",
 	},
 });
 
 const cancelButtonStyle = StyleSheet.create({
 	container: {
-		backgroundColor: "#90EE90",
-		width: 100,
-		height: 40,
+		width: 120,
+		height: 50,
 		display: "flex",
 		alignItems: "center",
 		justifyContent: "center",
@@ -415,13 +482,15 @@ const cancelButtonStyle = StyleSheet.create({
 		fontSize: 20,
 		color: "#000000",
 	},
+	linearGradient: {
+		borderRadius: 10
+	}
 });
 
 const saveButtonStyle = StyleSheet.create({
 	container: {
-		backgroundColor: "#90EE90",
-		width: 100,
-		height: 40,
+		width: 120,
+		height: 50,
 		display: "flex",
 		alignItems: "center",
 		justifyContent: "center",
@@ -432,6 +501,23 @@ const saveButtonStyle = StyleSheet.create({
 		fontSize: 20,
 		color: "#000000",
 	},
+	linearGradient: {
+		borderRadius: 10
+	}
 });
+
+const calendarPickerStyle = StyleSheet.create({
+	container: {
+		width: "100%",
+		height: "40%",
+		marginTop: "72%",
+		borderRadius: 10,
+		borderWidth: 1,
+		borderColor: "#808080"
+	},
+	closeButton: {
+
+	}
+})
 
 export default EditScheduleScreen;
