@@ -1,12 +1,11 @@
 const axios = require("axios");
-const aio_key = "aio_xWAq30FEBn10PygTgRr1uiiqupLS";
+const aio_key = "aio_jZVA16YhsVDCxK6m2q8EBwZEIE4R";
 
 const BACKEND_API = "https://smart-house-api.onrender.com";
 let data = [];
+let tempOld = 0.0, tempNew = 0.0, humidOld = 0.0, humidNew = 0.0, distanceOld = 0, distanceNew = 0;
 
-let distanceOld = 0.0;
-let distanceNew = 0.0;
-let distanceFirstRun = true; // Add flag to prevent false triggering when distanceOld = 0
+let isFirstRun = true;
 
 // --Get threshold data and run once
 const fetchThresholdData = async () => {
@@ -29,6 +28,7 @@ const fetchThresholdData = async () => {
 			console.log("Distance Data: ", item["distance"]);
 			console.log("-----------");
 		}
+		return data;
 	} catch (error) {
 		handleError(error);
 	}
@@ -51,11 +51,11 @@ const fetchSensorData = async (tempSensor, humidSensor, distanceSensor) => {
 		const distanceResponse = await axios.get(`https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.${distanceSensor.toString()}/data/last`, { headers });
 		const latestDistance = parseFloat(distanceResponse.data.value);
 
-		console.log("Latest temp: ", latestTemp);
-		console.log("Latest humid: ", latestHumid);
-		console.log("Latest distance: ", latestDistance);
-		console.log("----------------------");
-		return latestTemp, latestHumid, latestDistance;
+		// console.log("Latest temp: ", latestTemp);
+		// console.log("Latest humid: ", latestHumid);
+		// console.log("Latest distance: ", latestDistance);
+		// console.log("----------------------");
+		return [latestTemp, latestHumid, latestDistance];
 	} catch (error) {
 		handleError(error);
 	}
@@ -63,6 +63,11 @@ const fetchSensorData = async (tempSensor, humidSensor, distanceSensor) => {
 
 // --Send light data
 const sendLightData = async (lightDevice, lightValue) => {
+	if (lightDevice == '') {
+		console.log("Light device empty");
+		return;
+	}
+
 	try {
 		const headers = {
 			"X-AIO-Key": aio_key,
@@ -72,6 +77,8 @@ const sendLightData = async (lightDevice, lightValue) => {
 		const data = {
 			value: lightValue,
 		};
+
+		
 
 		url = `https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.${lightDevice.toString()}/data`;
 		console.log("Send light url: ", url)
@@ -86,6 +93,11 @@ const sendLightData = async (lightDevice, lightValue) => {
 
 // --Send fan data
 const sendFanData = async (fanDevice, fanValue) => {
+	if (fanDevice == '') {
+		console.log("Fan device empty");
+		return;
+	}
+
 	try {
 		const headers = {
 			"X-AIO-Key": aio_key,
@@ -109,14 +121,20 @@ const sendFanData = async (fanDevice, fanValue) => {
 
 // --Get last active fanspeed
 const getLastFanSpeed = async (fanDevice) => {
+	if (fanDevice == '') {
+		console.log("Fan device empty, cannot get last value of fan speed");
+		return;
+	}
+
 	try {
 		const headers = {
 			"X-AIO-Key": aio_key,
 			"Content-Type": "application/json",
 		};
 
-		const response = await axios.get(`https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.${fanDevice.toString()}/data/last`, { headers });
-		// console.log(response.data.value);
+		url = `https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.${fanDevice.toString()}/data/last`;
+
+		const response = await axios.get(url, { headers });
 		return response.data.value;
 	} catch (error) {
 		handleError(error);
@@ -126,56 +144,46 @@ const getLastFanSpeed = async (fanDevice) => {
 const checkThresholdReached = async () => {
 	data = [];
 	await fetchThresholdData();
-	let tempOld,
-		tempNew = 0.0;
-	let humidOld,
-		humidNew = 0.0;
-	let distanceOld,
-		distanceNew = 0;
-
-	let isFirstRun = true;
 
 	for (const item of data[0]) {
-		console.log("Enter loop block");
-		tempNew, humidNew, distanceNew = fetchSensorData(item["tempSensor"], item["humidSensor"], item["distanceSensor"]);
-		console.log("Fetch sensor success");
+		[tempNew, humidNew, distanceNew] = await fetchSensorData(item["tempSensor"], item["humidSensor"], item["distanceSensor"]);
 
 		let tempThreshold = item["temp"].$numberDecimal;
 		let humidThreshold = item["humid"].$numberDecimal;
 		let distanceThreshold = item["distance"];
 
+		console.log("Distance old:", distanceOld);
+		console.log("Distance new:", distanceNew);
+		console.log("Distance threshold:", distanceThreshold);
+		console.log("----------------------------");
+
 		let revertFanSpeed = 0;
-		getLastFanSpeed(item["fanDevice"]).then(fanSpeed => {
-			revertFanSpeed = fanSpeed;
+		await getLastFanSpeed(item["fanDevice"]).then(fanSpeed => {
+			(fanSpeed == undefined) ? revertFanSpeed = 0 : revertFanSpeed = fanSpeed;
 		});
-		console.log("Revert fan speed: ", revertFanSpeed);
+		console.log("init fan speed: ", revertFanSpeed);
 
 		if (!isFirstRun) {
-			if (
-				distanceNew <= distanceThreshold &&
-				distanceOld > distanceThreshold &&
-				tempNew >= tempThreshold &&
-				tempOld < tempThreshold &&
-				humidNew >= humidThreshold &&
-				humidOld < humidThreshold
-			) {
+			tempOld = tempNew;
+			humidOld = humidNew;
+			distanceOld = distanceNew;
+
+			if (distanceNew <= distanceThreshold &&	distanceOld > distanceThreshold) {
+				console.log("Threshold passed!");
 				sendLightData(item["lightDevice"], item["lightStatus"]);
 				sendFanData(item["fanDevice"], item["fanSpeed"]);
-			} else if (
-				distanceNew > distanceThreshold &&
-				distanceOld <= distanceThreshold &&
-				tempNew < tempThreshold &&
-				tempOld >= tempThreshold &&
-				humidNew < humidThreshold &&
-				humidOld >= humidThreshold
-			) {
+			} 
+			else if (distanceNew > distanceThreshold && distanceOld <= distanceThreshold) {
+				console.log("Threshold passed!");
 				sendLightData(item["lightDevice"], !item["lightStatus"]);
 				sendFanData(item["fanDevice"], revertFanSpeed);
 			}
 		}
 
 		if (isFirstRun) {
-			tempOld, humidOld, distanceOld = tempNew, humidNew, distanceNew;
+			tempOld = tempNew;
+			humidOld = humidNew;
+			distanceOld = distanceNew;
 			isFirstRun = false;
 		}
 	}
@@ -185,10 +193,10 @@ const checkThresholdReached = async () => {
 // const checkDistanceThresholdReached = async (distanceThreshold) => {
 // 	await fetchSensorData();
 
-// 	console.log("Distance old:", distanceOld);
-// 	console.log("Distance new:", distanceNew);
-// 	console.log("Distance threshold:", distanceThreshold);
-// 	console.log("----------------------------");
+	// console.log("Distance old:", distanceOld);
+	// console.log("Distance new:", distanceNew);
+	// console.log("Distance threshold:", distanceThreshold);
+	// console.log("----------------------------");
 
 // 	if (!isFirstRun) {
 // 		if (distanceNew <= distanceThreshold && distanceOld > distanceThreshold) {
@@ -207,60 +215,70 @@ const checkThresholdReached = async () => {
 // 	}
 // };
 
-// --Run test functions
+//  --Run temp distance data to test
+const distanceValueArr = [20.0, 30.0, 40.0, 50.0, 60.0, 80.0, 100.0, 60.0, 51.0, 50.1, 50.0, 49.9, 40.0, 60.0, 100.0];
 
-fetchThresholdData();
-fetchSensorData("temp", "humid", "distance");
-// console.log("Last fan speed: ", getLastFanSpeed("fan-speed"));
-// getLastFanSpeed("fan-speed").then(fanSpeed => {
-// 	console.log("Last fan speed:", fanSpeed);
-// });
+const sendFakeDistanceData = async (distanceValue) => {
+    try {
+        const headers = {
+            "X-AIO-Key": aio_key,
+            "Content-Type": "application/json",
+        };
 
-// fetchSensorData();
-// checkDistanceThresholdReached(50);
+        const data = {
+            value: distanceValue,
+        };
 
-const interval = setInterval(() => {
-    checkThresholdReached();
+        const response = await axios.post(`https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.distance/data`, data, { headers });
+        console.log("The distance is:", response.data.value);
+    } catch (error) {
+        handleError(error);
+    }
+};
+
+let currentIndex = 0;
+const interval2 = setInterval(() => {
+    if (currentIndex < distanceValueArr.length) {
+        const distanceValue = distanceValueArr[currentIndex];
+        sendFakeDistanceData(distanceValue);
+        currentIndex++;
+    } else {
+        clearInterval(interval2); // Dừng lược đồ nếu đã gửi hết mọi phần tử
+		console.log("Send fake distance data completed");
+		console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    }
 }, 3000);
 
-//  --Run temp distance data to test
-// const distanceValueArr = [20.0, 30.0, 40.0, 50.0, 60.0, 80.0, 100.0, 60.0, 51.0, 50.1, 50.0, 49.9, 40.0, 60.0, 100.0];
+// --Run test functions
+const runScript = async () => {
+    try {
+        await fetchThresholdData(); // Step 1
+        await fetchSensorData("temp", "humid", "distance"); // Step 2
+        const interval = setInterval(async () => {
+            await checkThresholdReached(); // Step 3
+        }, 3000);
 
-// const sendFakeDistanceData = async (distanceValue) => {
-//     try {
-//         const headers = {
-//             "X-AIO-Key": aio_key,
-//             "Content-Type": "application/json",
-//         };
+        // Clean up interval on script termination
+        process.on("SIGINT", () => {
+            clearInterval(interval);
+            console.log("Script terminated, cleaning up...");
+            process.exit();
+        });
+    } catch (error) {
+        console.error("Script encountered an error:", error);
+        process.exit(1); // Exit with a non-zero status code to indicate an error
+    }
+};
 
-//         const data = {
-//             value: distanceValue,
-//         };
-
-//         const response = await axios.post(`https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.distance/data`, data, { headers });
-//         console.log(response.data);
-//     } catch (error) {
-//         handleError(error);
-//     }
-// };
-
-// let currentIndex = 0;
-// const interval2 = setInterval(() => {
-//     if (currentIndex < distanceValueArr.length) {
-//         const distanceValue = distanceValueArr[currentIndex];
-//         sendFakeDistanceData(distanceValue);
-//         currentIndex++;
-//     } else {
-//         clearInterval(interval2); // Dừng lược đồ nếu đã gửi hết mọi phần tử
-//     }
-// }, 3000);
+// Run the script
+runScript();
 
 //Always be the last in code
-process.on("SIGINT", () => {
-	clearInterval(interval);
-	console.log("Script terminated, cleaning up...");
-	process.exit();
-});
+// process.on("SIGINT", () => {
+// 	clearInterval(interval);
+// 	console.log("Script terminated, cleaning up...");
+// 	process.exit();
+// });
 
 function handleError(error) {
 	if (error.response) {
