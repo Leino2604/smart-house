@@ -375,7 +375,7 @@ const weekDayViewStyle = StyleSheet.create({
 	container: {
 		display: "flex",
 		flexDirection: "row",
-		gap: 16,
+		gap: 12
 	},
 });
 
@@ -413,9 +413,9 @@ const equipmentLevelChangeViewStyle = StyleSheet.create({
 		height: "23.22%",
 		display: "flex",
 		flexDirection: "column",
-		gap: 18,
+		gap: 25,
 		marginLeft: "5.64%",
-		marginTop: 10,
+		marginTop: "10%",
 	},
 });
 
@@ -492,7 +492,7 @@ const notificationChangeView = StyleSheet.create({
 		flexDirection: "row",
 		alignItems: "center",
 		gap: 126,
-		marginTop: "5%",
+		marginTop: "12%",
 		marginLeft: "6.92%",
 	},
 });
@@ -524,7 +524,7 @@ const buttonsViewStyle = StyleSheet.create({
 		display: "flex",
 		flexDirection: "row",
 		gap: 33,
-		marginTop: "4.91%",
+		marginTop: "10%",
 		marginLeft: "30%",
 	},
 });
