@@ -67,6 +67,11 @@ const thresholdSchema = new mongoose.Schema({
 		required: true,
 		default: true,
 	},
+	currentState: {
+		type: Boolean,
+		required: true,
+		default: false,
+	},
 });
 
 const Threshold = mongoose.model("Threshold", thresholdSchema);
