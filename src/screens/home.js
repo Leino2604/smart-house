@@ -6,20 +6,35 @@ import {
 	View,
 	StyleSheet,
 	Text,
-	Image,
 } from "react-native";
+import axios from "axios";
+import { LinearGradient } from "expo-linear-gradient";
+import { useFonts } from "expo-font";
+
+
 import UserIcon from "../components/userIcon";
 import FanIcon from "../components/fanIcon";
 import ToggleSwitch from "../components/ToggleSwitch";
 import LightBulbIcon from "../components/lightBulbIcon";
-import axios from "axios";
+import ThermometerIcon from "../components/thermometerIcon";
+import HumiditymeterIcon from "../components/humiditymeterIcon";
+
 
 const HomeScreen = () => {
 	const [user, setUser] = useState(initialUser);
 	const [fanEnabled, setFanEnabled] = useState(false);
 	const [lightEnabled, setLightEnabled] = useState(false);
-	const [temp, setTemp] = useState(0.0);
-	const [humidity, setHumidity] = useState(0.0);
+	const [temp, setTemp] = useState(20.0);
+	const [humidity, setHumidity] = useState(70.0);
+
+	/* Used to load new fonts */
+	const [fontsLoaded, fontsError] = useFonts({
+		"Karla-Regular": require("../assets/fonts/Karla-Regular.ttf")
+	});
+
+	if (!fontsLoaded) {
+		return null;
+	}
 
 	// Function to fetch data from the API
 	const fetchData = async (url, setDataFunction) => {
@@ -92,8 +107,13 @@ const HomeScreen = () => {
 
 	return (
 		<View style={homeScreenStyle.container}>
-			<View style={homeScreenStyle.main}>
-				<StatusBar backgroundColor={"#246EE9"} />
+			<LinearGradient 
+				style={homeScreenStyle.main}
+				colors={["#004282", "#5899e2"]}
+			>
+				<StatusBar 
+					barStyle={"light-content"}
+				/>
 				<View style={userInfoStyle.container}>
 					<Text style={userInfoStyle.greetingMsg}>
 						Hi {user.name}
@@ -106,7 +126,13 @@ const HomeScreen = () => {
 					<ScrollView>
 						<Text style={equipmentInfoStyle.title}>Devices</Text>
 						<View style={equipmentInfoStyle.content}>
-							<View style={fanStyle.container}>
+							<LinearGradient 
+								style={fanStyle.container}
+								colors={["rgb(63, 76, 119)", "rgb(32, 38, 57)"]}
+								locations={[0.114, 0.702]}
+								start={{x: 0, y: 0}}
+								end={{x: 1, y: 0}}
+							>
 								<View style={fanStyle.content}>
 									<FanIcon />
 									<ToggleSwitch
@@ -131,8 +157,14 @@ const HomeScreen = () => {
 									/>
 								</View>
 								<Text style={fanStyle.title}>Smart Fan</Text>
-							</View>
-							<View style={lightStyle.container}>
+							</LinearGradient>
+							<LinearGradient 
+								style={lightStyle.container}
+								colors={["rgb(63, 76, 119)", "rgb(32, 38, 57)"]}
+								locations={[0.114, 0.702]}
+								start={{x: 0, y: 0}}
+								end={{x: 1, y: 0}}
+							>
 								<View style={lightStyle.content}>
 									<LightBulbIcon />
 									<ToggleSwitch
@@ -159,26 +191,39 @@ const HomeScreen = () => {
 								<Text style={lightStyle.title}>
 									Smart Light
 								</Text>
-							</View>
-							<View style={lightStyle.container}>
+							</LinearGradient>
+
+							<LinearGradient 
+								style={lightStyle.container}
+								colors={["rgb(63, 76, 119)", "rgb(32, 38, 57)"]}
+								locations={[0.114, 0.702]}
+								start={{x: 0, y: 0}}
+								end={{x: 1, y: 0}}
+							>
 								<View style={lightStyle.content}>
-									<LightBulbIcon />
+									<ThermometerIcon />
                                     <Text style={value.tempValue}>{temp}</Text>
 								</View>
 								<Text style={fanStyle.title}>Temperature</Text>
-							</View>
+							</LinearGradient>
                             
-							<View style={lightStyle.container}>
+							<LinearGradient 
+								style={lightStyle.container}
+								colors={["rgb(63, 76, 119)", "rgb(32, 38, 57)"]}
+								locations={[0.114, 0.702]}
+								start={{x: 0, y: 0}}
+								end={{x: 1, y: 0}}
+							>
 								<View style={lightStyle.content}>
-									<LightBulbIcon />
+									<HumiditymeterIcon />
                                     <Text style={value.humidityValue}>{humidity}%</Text>
 								</View>
 								<Text style={fanStyle.title}>Humidity</Text>
-							</View>
+							</LinearGradient>
 						</View>
 					</ScrollView>
 				</View>
-			</View>
+			</LinearGradient>
 			<MenuBar />
 		</View>
 	);
@@ -190,6 +235,7 @@ const homeScreenStyle = StyleSheet.create({
 		width: "100%",
 		height: "100%",
 		gap: 39,
+		fontFamily: "Karla-Regular"
 	},
 	main: {
 		display: "flex",
@@ -240,7 +286,7 @@ const equipmentInfoStyle = StyleSheet.create({
         flex: 1,
     },
 	title: {
-		color: "#000000",
+		color: "#E5E5E5",
 		fontWeight: "bold",
 		fontSize: 24,
 	},
@@ -270,7 +316,7 @@ const fanStyle = StyleSheet.create({
 		marginTop: 33, // TODO: relative unit
 	},
 	title: {
-		color: "#000000",
+		color: "#E5E5E5",
 		fontSize: 16,
 		fontWeight: "bold",
 		marginLeft: 25,
@@ -295,7 +341,7 @@ const lightStyle = StyleSheet.create({
 		marginTop: 33, // TODO: relative unit
 	},
 	title: {
-		color: "#000000",
+		color: "#E5E5E5",
 		fontSize: 16,
 		fontWeight: "bold",
 		marginLeft: 25,
@@ -329,12 +375,14 @@ const lightEnabledToggleSwitchStyle = StyleSheet.create({
 const value = StyleSheet.create({
     tempValue: {
         // marginLeft: 'auto',  // Đẩy sang bên phải
+		color: "#E5E5E5",
         fontSize: 20,  // Tăng kích thước font
     },
     humidityValue: {
         // borderWidth: 1,
         // marginLeft: 'auto',  // Đẩy sang bên phải
-        fontSize: 20,  // Tăng kích thước font
+		color: "#E5E5E5",
+        fontSize: 20,
     },
 })
 
