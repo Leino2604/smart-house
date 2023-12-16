@@ -12,17 +12,22 @@ import Slider from "@react-native-community/slider";
 import ToggleSwitch from "../components/ToggleSwitch";
 import { StatusBar } from "expo-status-bar";
 import { Calendar } from "react-native-calendars";
+import {useFonts} from "expo-font";
+
 import FanIcon from "../components/fanIcon";
 import LightBulbIcon from "../components/lightBulbIcon";
 import MenuBar from "../components/menu";
 import CalendarIcon from "../components/calendarIcon";
 import TopArrowIcon from "../components/topArrowIcon";
-import BottomArrowIcon from "../components/bottomArrowIcon"
-
+import BottomArrowIcon from "../components/bottomArrowIcon";
 const EditScheduleScreen = () => {
 	/* Used to config calendar */
 	const TODAY = new Date(2023, 11, 30);
-	const weekDay = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+	const DEFAULT_SELECTED_WEEK_DAYS = [false, false, false, false, false, false, false];
+	/* Used to select on the calendar */
+	const weekDays = ["M", "T", "W", "T", "F", "S", "S"];
+	const [selectedWeekDays, setSelectedWeekDays] = useState(DEFAULT_SELECTED_WEEK_DAYS);
+
 	const [smartLightEnabled, setSmartLightEnabled] = useState(false);
 	const [notificationEnabled, setNotificationEnabled] = useState(false);
 	const [calendarPicked, setCalendarPicked] = useState(false);
@@ -50,7 +55,19 @@ const EditScheduleScreen = () => {
 		setCalendarPicked((prevState) => !prevState);
 	}
 
-	function getStringOfDate(date) {
+	function pressWeekDayButton(index) {
+		const nextSelectedWeekDays = selectedWeekDays.map((dayFlag, idx) => {
+			if (idx == index) {
+				return !dayFlag;
+			} else {
+				return dayFlag;
+			}
+		});
+		console.log(nextSelectedWeekDays);
+		setSelectedWeekDays(nextSelectedWeekDays);
+	}
+
+	function getDateAsStringKey(date) {
 		const day = (date.getDate() >= 10) ? date.getDate().toString() : "0" + date.getDate().toString();
 		const month = (date.getMonth() >= 10) ? date.getMonth().toString() : "0" + date.getMonth().toString();
 		const year = date.getFullYear().toString();
@@ -58,14 +75,20 @@ const EditScheduleScreen = () => {
 	}
 
 	/* Used to decorate date on calendar */
-	const selectedDateStr = getStringOfDate(selectedDate);
+	const selectedDateAsStringKey = getDateAsStringKey(selectedDate);
 	const markedDateOnCalendar = {
-		"2024-01-01": {marked: true},
-		[selectedDateStr]: {selected: true}
-	}
+		[selectedDateAsStringKey] : {selected: true},
+		"2024-01-01": {marked: true}	
+	};
 
-	/* Used to detect touch outside to close calendar */
+	/* Used to load new fonts */
+	const [fontsLoaded, fontsError] = useFonts({
+		"Karla-Regular": require("../assets/fonts/Karla-Regular.ttf")
+	});
 	
+	if (!fontsLoaded) {
+		return null;
+	}
 
 	return (	
 		<View 
@@ -100,7 +123,7 @@ const EditScheduleScreen = () => {
 				<View style={calendarViewStyle.container}>
 					<View style={daySelectionViewStyle.container}>
 						<Text style={dayTextStyle.container}>
-							Day: Friday, October 27
+							Friday, October 27
 						</Text>
 						<Modal
 							animationType="slide"
@@ -143,13 +166,19 @@ const EditScheduleScreen = () => {
 					</View>
 
 					<View style={weekDayViewStyle.container}>
-						{weekDay.map((day, index) => (
-							<Text
+						{weekDays.map((day, index) => (
+							<TouchableOpacity
 								key={index}
-								style={weekDayTextStyle.container}
+								style={selectedWeekDays[index] ? weekDayStyle.selectedContainer : weekDayStyle.unSelectedContainer}
+								onPress={() => pressWeekDayButton(index)}
 							>
-								{day}
+								<Text
+									style={weekDayStyle.text}
+								>
+									{day}
 							</Text>
+							</TouchableOpacity>
+							
 						))}
 					</View>
 				</View>
@@ -273,7 +302,8 @@ const editScheduleScreenViewStyle = StyleSheet.create({
 		display: "flex",
 		flexDirection: "column",
 		width: "100%",
-		height: "100%"
+		height: "100%",
+		fontFamily: "Karla-Regular"
 	},
 });
 
@@ -326,13 +356,6 @@ const calendarViewStyle = StyleSheet.create({
 	},
 });
 
-const calendarIconStyle = StyleSheet.create({
-	container: {
-		width: 48,
-		height: 48,
-	},
-});
-
 const daySelectionViewStyle = StyleSheet.create({
 	container: {
 		display: "flex",
@@ -356,11 +379,33 @@ const weekDayViewStyle = StyleSheet.create({
 	},
 });
 
-const weekDayTextStyle = StyleSheet.create({
-	container: {
+const weekDayStyle = StyleSheet.create({
+	selectedContainer: {
+		borderWidth: 1,
+		borderColor: "#FFFFFF",
+		borderRadius: 50,
+		width: 40,
+		height: 40,
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "center",
+		backgroundColor: "#4B0082"
+	},
+	unSelectedContainer: {
+		borderWidth: 1,
+		borderColor: "#FFFFFF",
+		borderRadius: 50,
+		width: 40,
+		height: 40,
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "center",
+		backgroundColor: "#9370DB"
+	},
+	text: {
 		fontSize: 18,
 		color: "#FFFFFF",
-	},
+	}
 });
 
 const equipmentLevelChangeViewStyle = StyleSheet.create({
