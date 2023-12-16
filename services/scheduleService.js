@@ -1,6 +1,6 @@
 //Will send data to adafruit feed to trigger when a time occured
 const axios = require("axios");
-const aio_key = "aio_pUIZ51qAjbLsUnFexeGSoZw4RZIa";
+const aio_key = "aio_fClV25jxEPfNzb2KUmpTMtpBthHL";
 
 const BACKEND_API = "https://smart-house-api.onrender.com";
 let scheduleData = [];
@@ -84,8 +84,12 @@ const triggerSchedule = () => {
 	const checkSchedules = async () => {
 		if (isCooldown) return;
 
-        scheduleData = [];
         await fetchScheduleData();
+
+        if (scheduleData.length == 0) {
+            console.log("No schedule");
+            return;
+        }
 
 		const currentTime = new Date();
 		const options = { timeZone: 'Asia/Ho_Chi_Minh', hour12: false };
@@ -98,6 +102,11 @@ const triggerSchedule = () => {
 		// console.log("----------------------");
 
 		for (const schedule of scheduleData) {
+            if (schedule.notification === false) {
+                console.log("Schedule inactive. id: ", schedule._id);
+                continue;
+            }
+
 			const scheduleTime = new Date(schedule.date);
 
 			// console.log(schedule.hour);

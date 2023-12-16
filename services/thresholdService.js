@@ -1,12 +1,12 @@
 const axios = require("axios");
-const aio_key = "aio_pUIZ51qAjbLsUnFexeGSoZw4RZIa";
+const aio_key = "aio_fClV25jxEPfNzb2KUmpTMtpBthHL";
 
 const BACKEND_API = "https://smart-house-api.onrender.com";
-let data = [];
 let temp = 0.0,
 	humid = 0.0,
-	distance = 0.0,
-	presented = false;
+	distance = 0.0;
+// let presented = false;
+let data = [];
 
 // --Get threshold data and run once
 const fetchThresholdData = async () => {
@@ -14,7 +14,7 @@ const fetchThresholdData = async () => {
 		const response = await axios.get(`${BACKEND_API}/thresholds`);
 		const thresholds = response.data;
 		data = thresholds;
-		return data;
+		return thresholds;
 	} catch (error) {
 		handleError(error);
 	}
@@ -130,63 +130,56 @@ const sendFanData = async (fanDevice, fanValue) => {
 	}
 };
 
+const changeCurrentState = async (id, value) => {
+	try {
+		const response = await axios.put(`https://smart-house-api.onrender.com/thresholds/${id}`, {
+			currentState: value,
+		});
+		console.log("State updated successfully. Id:", response.data._id);
+	} catch (error) {
+		console.error("Error updating state:", error);
+	}
+};
+
 // --Send PIR data
-const sendPIRData = async (pirDevice, pirValue) => {
-	if (!pirDevice) {
-		console.log("PIR device empty");
-		return;
-	}
-	try {
-		const headers = {
-			"X-AIO-Key": aio_key,
-			"Content-Type": "application/json",
-		};
-		const data = {
-			value: pirValue,
-		};
-		url = `https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.${pirDevice.toString()}/data`;
-		const response = await axios.post(url, data, { headers });
-		// console.log(response.data);
-		console.log(`Change PIR device ${pirDevice} to ${pirValue}`);
-	} catch (error) {
-		handleError(error);
-	}
-};
-
-// --Get last active fanspeed
-const getLastFanSpeed = async (fanDevice) => {
-	if (!fanDevice) {
-		console.log("Fan device empty, cannot get last value of fan speed");
-		return;
-	}
-
-	try {
-		const headers = {
-			"X-AIO-Key": aio_key,
-			"Content-Type": "application/json",
-		};
-		url = `https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.${fanDevice.toString()}/data/last`;
-
-		const response = await axios.get(url, { headers });
-		return response.data.value;
-	} catch (error) {
-		handleError(error);
-	}
-};
+// const sendPIRData = async (pirDevice, pirValue) => {
+// 	if (!pirDevice) {
+// 		console.log("PIR device empty");
+// 		return;
+// 	}
+// 	try {
+// 		const headers = {
+// 			"X-AIO-Key": aio_key,
+// 			"Content-Type": "application/json",
+// 		};
+// 		const data = {
+// 			value: pirValue,
+// 		};
+// 		url = `https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.${pirDevice.toString()}/data`;
+// 		const response = await axios.post(url, data, { headers });
+// 		// console.log(response.data);
+// 		console.log(`Change PIR device ${pirDevice} to ${pirValue}`);
+// 	} catch (error) {
+// 		handleError(error);
+// 	}
+// };
 
 let interval;
-let thresholdFlag = false;
-// let revertFanSpeed = 0;
 
-const triggerThreshold = () => {
-	const checkThresholdReached = async () => {
-		data = [];
-		await fetchThresholdData();
+const triggerThreshold = async () => {
+	data = [];
+	await fetchThresholdData();
+	if (data.length === 0) {
+		console.log("No threshold data");
+		return;
+	}
 
-		for (const item of data) {
+	for (let i = 0; i < data.length; i++) {
+		let item = data[i];
+		const checkThresholdReached = async () => {
 			if (item.active === true) {
 				[temp, humid, distance] = await fetchEnvironmentSensorData(item["tempSensor"], item["humidSensor"], item["distanceSensor"]);
-				presentedString = await fetchPIRSensorData(item["pirSensor"]); //KHONG CO/CO NGUOI
+				let presentedString = await fetchPIRSensorData(item["pirSensor"]); //KHONG CO/CO NGUOI
 
 				let tempThreshold = item["temp"].$numberDecimal;
 				let humidThreshold = item["humid"].$numberDecimal;
@@ -198,52 +191,64 @@ const triggerThreshold = () => {
 					isPresent = true;
 				} else isPresent = false;
 
-				console.log(isPresent, presentThreshold, thresholdFlag);
+				console.log(
+					temp,
+					tempThreshold,
+					humid,
+					humidThreshold,
+					distance,
+					distanceThreshold,
+					item.lightStatusWhenReached,
+					item.lightStatusOriginal,
+					item.fanSpeedWhenReached,
+					item.fanSpeedOriginal,
+				);
+				console.log(isPresent, presentThreshold, item.currentState);
 
 				if (
-					// temp >= tempThreshold &&
-					// humid >= humidThreshold &&
-					// distance <= distanceThreshold &&
+					temp >= tempThreshold &&
+					humid >= humidThreshold &&
+					distance <= distanceThreshold &&
 					isPresent === presentThreshold &&
-					thresholdFlag === false
+					item.currentState === false
 				) {
 					console.log("Threshold Reached. Id:", item["_id"]);
-					await sendLightData(item.lightDevice, item.lightStatus);
-					await sendFanData(item.fanDevice, item.fanSpeed);
-					thresholdFlag = true;
+					await sendLightData(item.lightDevice, item.lightStatusWhenReached);
+					await sendFanData(item.fanDevice, item.fanSpeedWhenReached);
+					await changeCurrentState(item["_id"], true);
 				}
 
 				if (
-					// temp < tempThreshold &&
-					// humid < humidThreshold &&
-					// distance < distanceThreshold &&
-					isPresent !== presentThreshold &&
-					thresholdFlag === true
+					temp < tempThreshold &&
+					humid < humidThreshold &&
+					distance > distanceThreshold &&
+					isPresent != presentThreshold &&
+					item.currentState === true
 				) {
 					console.log("Threshold Reverted. Id:", item["_id"]);
-					await sendLightData(item.lightDevice, !item.lightStatus);
-					await sendFanData(item.fanDevice, 0);
-					thresholdFlag = false;
+					await sendLightData(item.lightDevice, item.lightStatusOriginal);
+					await sendFanData(item.fanDevice, item.fanSpeedOriginal);
+					await changeCurrentState(item["_id"], false);
 				}
+			} else {
+				console.log("Threshold not active. Id: ", item["_id"]);
 			}
-		}
-		// setTimeout(checkThresholdReached, 3000);
-	};
-	// Call the function once immediately
-	checkThresholdReached();
-	interval = setInterval(checkThresholdReached, 3000);
+		};
+
+		await checkThresholdReached();
+	}
 };
+
+// triggerThreshold();
+interval = setInterval(triggerThreshold, 3000);
 
 // --Run test functions
 // (async () => {
 // 	console.log(await fetchThresholdData());
 // 	console.log(await fetchEnvironmentSensorData("temp", "humid", "distance"));
-// 	console.log(await getLastFanSpeed("fan-speed"));
 // 	console.log(await fetchPIRSensorData("pir"));
 // 	triggerThreshold();
 // })();
-
-triggerThreshold();
 
 //Always be the last in code
 process.on("SIGINT", () => {
