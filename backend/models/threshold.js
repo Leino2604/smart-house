@@ -25,16 +25,23 @@ const thresholdSchema = new mongoose.Schema({
 		type: String,
 		default: "",
 	},
-	fanSpeed: {
+	fanSpeedOriginal: {
 		type: Number,
-		required: true,
+		required: false,
 		enum: [0, 20, 40, 60, 80, 100],
-		default: 0,
 	},
-	lightStatus: {
+	lightStatusOriginal: {
 		type: Boolean,
-		required: true,
-		default: false,
+		required: false,
+	},
+	fanSpeedWhenReached: {
+		type: Number,
+		required: false,
+		enum: [0, 20, 40, 60, 80, 100],
+	},
+	lightStatuswhenReached: {
+		type: Boolean,
+		required: false,
 	},
 	humid: {
 		type: "decimal128",
