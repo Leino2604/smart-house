@@ -1,59 +1,46 @@
 import React from "react";
-import { View, Image, StyleSheet } from "react-native";
+import { View, Image, StyleSheet, TouchableOpacity } from "react-native";
+import HomeIcon from "./homeIcon";
+import ClockIcon from "./clockIcon";
+import SettingIcon from "./settingIcon"
+import {LinearGradient} from "expo-linear-gradient";
 
 const MenuBar = () => {
     return (
-        <View style={menuBarStyle.container}>
-            <Image 
-                source={require("../assets/home_icon.png")}
-                style={homeIconStyle.container}
-            />
-            <Image 
-                source={require("../assets/clock_icon.png")}
-                style={clockIconStyle.container}
-            />
-            <Image 
-                source={require("../assets/setting_icon.png")}
-                style={settingIconStyle.container}
-            />
-        </View>
+        <LinearGradient
+            colors={["#f9fcff", "#dee4ea"]}
+            start={{x: 0, y: 0}}
+            end={{x: 1, y: 0}}
+            style={menuBarStyle.container}
+        >
+            <TouchableOpacity>
+                <HomeIcon />
+            </TouchableOpacity>
+            <TouchableOpacity>
+                <ClockIcon />
+            </TouchableOpacity>
+            <TouchableOpacity>
+                <SettingIcon />
+            </TouchableOpacity>
+        </LinearGradient>
     );
 }
 
+/* TODO: need to be refined again */
 const menuBarStyle = StyleSheet.create({
     container: {
         display: "flex",
-        width: "74%",
-        height: "4.27%",
+        flex: 1,
+        // width: "74%",S
+        height: "7%",
         alignItems: "center",
-        justifyContent: "space-between",
+        justifyContent: "center",
         flexDirection: "row",
-        marginLeft: "12.82%",
-        // position: 'absolute',
-        // bottom: 0,
-        // left: 0,
+        gap: 30,
+        marginLeft: "8%",
     }
 });
 
-const homeIconStyle = StyleSheet.create({
-    container: {
-        width: 42,
-        height: 42
-    }
-});
 
-const clockIconStyle = StyleSheet.create({
-    container: {
-        width: 35,
-        height: 35
-    }
-});
-
-const settingIconStyle = StyleSheet.create({
-    container: {
-        width: 42,
-        height: 42
-    }
-})
 
 export default MenuBar;

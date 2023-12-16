@@ -1,25 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
 	View,
 	StyleSheet,
-	Image,
 	Text,
-	Switch,
-	Button,
 	TouchableOpacity,
+	Modal,
+	Alert,
 } from "react-native";
-import MenuBar from "../components/menu";
+import {LinearGradient} from "expo-linear-gradient";
+import Slider from "@react-native-community/slider";
+import ToggleSwitch from "../components/ToggleSwitch";
 import { StatusBar } from "expo-status-bar";
+import { Calendar } from "react-native-calendars";
+import {useFonts} from "expo-font";
 
 import FanIcon from "../components/fanIcon";
 import LightBulbIcon from "../components/lightBulbIcon";
-import Slider from "@react-native-community/slider";
-import ToggleSwitch from "../components/ToggleSwitch";
-
+import MenuBar from "../components/menu";
+import CalendarIcon from "../components/calendarIcon";
+import TopArrowIcon from "../components/topArrowIcon";
+import BottomArrowIcon from "../components/bottomArrowIcon";
 const EditScheduleScreen = () => {
-	const weekDay = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+	/* Used to config calendar */
+	const TODAY = new Date(2023, 11, 30);
+	const DEFAULT_SELECTED_WEEK_DAYS = [false, false, false, false, false, false, false];
+	/* Used to select on the calendar */
+	const weekDays = ["M", "T", "W", "T", "F", "S", "S"];
+	const [selectedWeekDays, setSelectedWeekDays] = useState(DEFAULT_SELECTED_WEEK_DAYS);
+
 	const [smartLightEnabled, setSmartLightEnabled] = useState(false);
 	const [notificationEnabled, setNotificationEnabled] = useState(false);
+	const [calendarPicked, setCalendarPicked] = useState(false);
+	const [selectedDate, setSelectedDate] = useState(TODAY);
+	
 	function toggleSmartLightSwitch() {
 		setSmartLightEnabled((preState) => !preState);
 	}
@@ -27,23 +40,72 @@ const EditScheduleScreen = () => {
 	function toggleNotificationEnabledSwitch() {
 		setNotificationEnabled((prevState) => !prevState);
 	}
-	return (
-		<View style={editScheduleScreenViewStyle.container}>
-			<View style={editScheduleViewStyle.container}>
+
+	function pressCalendarIcon() {
+		setCalendarPicked((prevState) => !prevState);
+	}
+
+	function pressCloseCalendarButton() {
+		console.log(calendarPicked)
+		setCalendarPicked(false);
+	}
+
+	function pressCloseCalendarAgain() {
+		Alert.alert("Calendar has been close");
+		setCalendarPicked((prevState) => !prevState);
+	}
+
+	function pressWeekDayButton(index) {
+		const nextSelectedWeekDays = selectedWeekDays.map((dayFlag, idx) => {
+			if (idx == index) {
+				return !dayFlag;
+			} else {
+				return dayFlag;
+			}
+		});
+		console.log(nextSelectedWeekDays);
+		setSelectedWeekDays(nextSelectedWeekDays);
+	}
+
+	function getDateAsStringKey(date) {
+		const day = (date.getDate() >= 10) ? date.getDate().toString() : "0" + date.getDate().toString();
+		const month = (date.getMonth() >= 10) ? date.getMonth().toString() : "0" + date.getMonth().toString();
+		const year = date.getFullYear().toString();
+		return year + "-" + month + "-" + day;
+	}
+
+	/* Used to decorate date on calendar */
+	const selectedDateAsStringKey = getDateAsStringKey(selectedDate);
+	const markedDateOnCalendar = {
+		[selectedDateAsStringKey] : {selected: true},
+		"2024-01-01": {marked: true}	
+	};
+
+	/* Used to load new fonts */
+	const [fontsLoaded, fontsError] = useFonts({
+		"Karla-Regular": require("../assets/fonts/Karla-Regular.ttf")
+	});
+	
+	if (!fontsLoaded) {
+		return null;
+	}
+
+	return (	
+		<View 
+			style={editScheduleScreenViewStyle.container}
+		>
+			<LinearGradient 
+				style={editScheduleViewStyle.container}
+				colors={["#004282", "#5899e2"]}
+			>
 				<StatusBar />
 
 				<View style={topArrowIconViewStyle.container}>
 					<TouchableOpacity>
-						<Image
-							source={require("../assets/top_arrow_icon.png")}
-							style={topArrowIconStyle.container}
-						/>
+						<TopArrowIcon />
 					</TouchableOpacity>
 					<TouchableOpacity>
-						<Image
-							source={require("../assets/top_arrow_icon.png")}
-							style={topArrowIconStyle.container}
-						/>
+						<TopArrowIcon />
 					</TouchableOpacity>
 				</View>
 
@@ -51,44 +113,84 @@ const EditScheduleScreen = () => {
 
 				<View style={bottomArrowIconViewStyle.container}>
 					<TouchableOpacity>
-						<Image
-							source={require("../assets/bottom_arrow_icon.png")}
-							style={bottomArrowIconStyle.container}
-						/>
+						<BottomArrowIcon />
 					</TouchableOpacity>
 					<TouchableOpacity>
-						<Image
-							source={require("../assets/bottom_arrow_icon.png")}
-							style={bottomArrowIconStyle.container}
-						/>
+						<BottomArrowIcon />
 					</TouchableOpacity>
 				</View>
 
 				<View style={calendarViewStyle.container}>
 					<View style={daySelectionViewStyle.container}>
 						<Text style={dayTextStyle.container}>
-							Day: Friday, October 27
+							Friday, October 27
 						</Text>
-						<Image
-							source={require("../assets/calendar_icon.png")}
-							style={calendarIconStyle.container}
-						/>
+						<Modal
+							animationType="slide"
+							visible={calendarPicked}
+							transparent={true}
+							onRequestClose={pressCloseCalendarAgain}
+        				>
+							<Calendar 
+								style={calendarPickerStyle.container}
+								theme={{
+									backgroundColor: "#FFFFFF",
+									calendarBackground: "#121212",
+									textSectionTitleColor: "#b6c1cd",
+									
+									selectedDayBackgroundColor: "#00adf5",
+									selectedDayTextColor: "#FFFFFF",
+									todayTextColor: '#00adf5',
+									dayTextColor: "#E5E5E5",
+									monthTextColor: "#E5E5E5",
+									textDisabledColor: "#2d4150"
+								}}
+								firstDay={1}
+								enableSwipeMonths={true}
+								minDate="2023-12-01"
+								maxDate="2024-12-31"
+								markedDates={markedDateOnCalendar}
+							/>
+							<TouchableOpacity
+								style={calendarPickerStyle.closeButton}
+								onPress={pressCloseCalendarButton}
+							>
+								<Text style={calendarPickerStyle.closeButtonText}>Close</Text>
+							</TouchableOpacity>
+						</Modal>
+						<TouchableOpacity
+							onPress={pressCalendarIcon}
+						>
+							<CalendarIcon/>
+						</TouchableOpacity>
 					</View>
 
 					<View style={weekDayViewStyle.container}>
-						{weekDay.map((day, index) => (
-							<Text
+						{weekDays.map((day, index) => (
+							<TouchableOpacity
 								key={index}
-								style={weekDayTextStyle.container}
+								style={selectedWeekDays[index] ? weekDayStyle.selectedContainer : weekDayStyle.unSelectedContainer}
+								onPress={() => pressWeekDayButton(index)}
 							>
-								{day}
+								<Text
+									style={weekDayStyle.text}
+								>
+									{day}
 							</Text>
+							</TouchableOpacity>
+							
 						))}
 					</View>
 				</View>
 
 				<View style={equipmentLevelChangeViewStyle.container}>
-					<View style={smartFanLevelChangeViewStyle.container}>
+					<LinearGradient 
+						style={smartFanLevelChangeViewStyle.container}
+						colors={["rgb(63, 76, 119)","rgb(32, 38, 57)"]}
+						locations={[0.114, 0.702]}
+						start={{x: 0, y: 0}}
+						end={{x: 1, y: 0}}
+					>
 						<FanIcon />
 						<Text style={smartFanLevelChangeTextStyle.container}>
 							Smart fan
@@ -97,11 +199,18 @@ const EditScheduleScreen = () => {
 							style={smartFanLevelChangeSliderStyle.container}
 							minimumValue={0}
 							maximumValue={100}
-                            // interval={20}
+							// interval={20}
 							thumbTintColor={"#006A64"}
 						/>
-					</View>
-					<View style={smartLightChangeViewStyle.container}>
+					</LinearGradient>
+
+					<LinearGradient 
+						style={smartLightChangeViewStyle.container}
+						colors={["rgb(63, 76, 119)","rgb(32, 38, 57)"]}
+						locations={[0.114, 0.702]}
+						start={{x: 0, y: 0}}
+						end={{x: 1, y: 0}}
+					>
 						<LightBulbIcon />
 						<Text style={smartLightChangeTextStyle.container}>
 							Smart light
@@ -127,7 +236,7 @@ const EditScheduleScreen = () => {
 							activeText={"On"}
 							inActiveText={"Off"}
 						/>
-					</View>
+					</LinearGradient>
 				</View>
 
 				<View style={notificationChangeView.container}>
@@ -155,15 +264,34 @@ const EditScheduleScreen = () => {
 					/>
 				</View>
 				<View style={buttonsViewStyle.container}>
-					<TouchableOpacity style={cancelButtonStyle.container}>
-						<Text style={cancelButtonStyle.text}>Cancel</Text>
-					</TouchableOpacity>
-
-					<TouchableOpacity style={saveButtonStyle.container}>
-						<Text style={saveButtonStyle.text}>Save</Text>
-					</TouchableOpacity>
+					<LinearGradient
+							colors={["rgba(98, 210, 141, 0.88)", "rgba(234, 245, 45, 0.79)"]}
+							start={{x: 0, y: 0}}
+							locations={[0.112, 0.88]}
+							
+							end={{x: 1, y: 0}}
+							style={cancelButtonStyle.linearGradient}
+					>
+						<TouchableOpacity style={cancelButtonStyle.container}>
+							<Text style={cancelButtonStyle.text}>Cancel</Text>
+						</TouchableOpacity>
+					</LinearGradient>
+					
+					<LinearGradient
+						colors={["rgba(98, 210, 141, 0.88)", "rgba(234, 245, 45, 0.79)"]}
+						start={{x: 0, y: 0}}
+						locations={[0.112, 0.88]}
+						end={{x: 1, y: 0}}
+						style={saveButtonStyle.linearGradient}
+					>
+						<TouchableOpacity 
+							style={saveButtonStyle.container}
+						>
+							<Text style={saveButtonStyle.text}>Save</Text>
+						</TouchableOpacity>
+					</LinearGradient>
 				</View>
-			</View>
+			</LinearGradient>
 			<MenuBar />
 		</View>
 	);
@@ -175,18 +303,18 @@ const editScheduleScreenViewStyle = StyleSheet.create({
 		flexDirection: "column",
 		width: "100%",
 		height: "100%",
-		gap: 50,
+		fontFamily: "Karla-Regular"
 	},
 });
 
 const editScheduleViewStyle = StyleSheet.create({
 	container: {
-		backgroundColor: "#246EE9",
 		borderBottomLeftRadius: 20,
 		borderBottomRightRadius: 20,
-		height: "89.22%",
+		// height: "89.22%",
+		height: "93%",
 		width: "100%",
-	},
+	}
 });
 
 const topArrowIconViewStyle = StyleSheet.create({
@@ -208,19 +336,6 @@ const bottomArrowIconViewStyle = StyleSheet.create({
 	},
 });
 
-const topArrowIconStyle = StyleSheet.create({
-	container: {
-		width: 48,
-		height: 48,
-	},
-});
-
-const bottomArrowIconStyle = StyleSheet.create({
-	container: {
-		width: 48,
-		height: 48,
-	},
-});
 
 const timeViewStyle = StyleSheet.create({
 	container: {
@@ -238,13 +353,6 @@ const calendarViewStyle = StyleSheet.create({
 		marginLeft: "7.69%",
 		justifyContent: "center",
 		gap: 17,
-	},
-});
-
-const calendarIconStyle = StyleSheet.create({
-	container: {
-		width: 48,
-		height: 48,
 	},
 });
 
@@ -267,15 +375,37 @@ const weekDayViewStyle = StyleSheet.create({
 	container: {
 		display: "flex",
 		flexDirection: "row",
-		gap: 16,
+		gap: 12
 	},
 });
 
-const weekDayTextStyle = StyleSheet.create({
-	container: {
+const weekDayStyle = StyleSheet.create({
+	selectedContainer: {
+		borderWidth: 1,
+		borderColor: "#FFFFFF",
+		borderRadius: 50,
+		width: 40,
+		height: 40,
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "center",
+		backgroundColor: "#4B0082"
+	},
+	unSelectedContainer: {
+		borderWidth: 1,
+		borderColor: "#FFFFFF",
+		borderRadius: 50,
+		width: 40,
+		height: 40,
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "center",
+		backgroundColor: "#9370DB"
+	},
+	text: {
 		fontSize: 18,
 		color: "#FFFFFF",
-	},
+	}
 });
 
 const equipmentLevelChangeViewStyle = StyleSheet.create({
@@ -283,9 +413,9 @@ const equipmentLevelChangeViewStyle = StyleSheet.create({
 		height: "23.22%",
 		display: "flex",
 		flexDirection: "column",
-		gap: 18,
+		gap: 25,
 		marginLeft: "5.64%",
-		marginTop: 10,
+		marginTop: "10%",
 	},
 });
 
@@ -293,8 +423,8 @@ const smartFanLevelChangeViewStyle = StyleSheet.create({
 	container: {
 		width: "89.74%",
 		height: "46.94%",
-		backgroundColor: "#FFFFFF",
 		borderStyle: "solid",
+		borderColor: "#FFFFFF",
 		borderRadius: 10,
 		display: "flex",
 		flexDirection: "row",
@@ -307,7 +437,7 @@ const smartFanLevelChangeViewStyle = StyleSheet.create({
 const smartFanLevelChangeTextStyle = StyleSheet.create({
 	container: {
 		fontSize: 16,
-		color: "#000000",
+		color: "#FFFFFF"
 	},
 });
 
@@ -322,7 +452,6 @@ const smartLightChangeViewStyle = StyleSheet.create({
 	container: {
 		width: "89.74%",
 		height: "43.88%",
-		backgroundColor: "#FFFFFF",
 		borderStyle: "solid",
 		borderRadius: 10,
 		display: "flex",
@@ -336,7 +465,7 @@ const smartLightChangeViewStyle = StyleSheet.create({
 const smartLightChangeTextStyle = StyleSheet.create({
 	container: {
 		fontSize: 16,
-		color: "#000000",
+		color: "#FFFFFF"
 	},
 });
 
@@ -363,7 +492,7 @@ const notificationChangeView = StyleSheet.create({
 		flexDirection: "row",
 		alignItems: "center",
 		gap: 126,
-		marginTop: "5%",
+		marginTop: "12%",
 		marginLeft: "6.92%",
 	},
 });
@@ -395,16 +524,15 @@ const buttonsViewStyle = StyleSheet.create({
 		display: "flex",
 		flexDirection: "row",
 		gap: 33,
-		marginTop: "4.91%",
-		marginLeft: "34.87%",
+		marginTop: "10%",
+		marginLeft: "30%",
 	},
 });
 
 const cancelButtonStyle = StyleSheet.create({
 	container: {
-		backgroundColor: "#90EE90",
-		width: 100,
-		height: 40,
+		width: 120,
+		height: 50,
 		display: "flex",
 		alignItems: "center",
 		justifyContent: "center",
@@ -415,13 +543,15 @@ const cancelButtonStyle = StyleSheet.create({
 		fontSize: 20,
 		color: "#000000",
 	},
+	linearGradient: {
+		borderRadius: 10
+	}
 });
 
 const saveButtonStyle = StyleSheet.create({
 	container: {
-		backgroundColor: "#90EE90",
-		width: 100,
-		height: 40,
+		width: 120,
+		height: 50,
 		display: "flex",
 		alignItems: "center",
 		justifyContent: "center",
@@ -432,6 +562,40 @@ const saveButtonStyle = StyleSheet.create({
 		fontSize: 20,
 		color: "#000000",
 	},
+	linearGradient: {
+		borderRadius: 10
+	}
+});
+
+const calendarPickerStyle = StyleSheet.create({
+	container: {
+		width: "100%",
+		marginTop: "111.5%",
+		borderRadius: 10,
+		borderWidth: 1,
+		borderColor: "#808080",
+	},
+	closeButton: {
+		width: "100%",
+		height: "5%",
+		marginTop: "3%",
+		backgroundColor: "rgb(63, 76, 119)",
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "center",
+		borderRadius: 10,
+		borderWidth: 1,
+		borderColor: "#FFFFFF",
+
+	},
+	closeButtonText: {
+		fontSize: 20,
+		color: "#E5E5E5",
+
+	},
+	header: {
+		fontStyle: "italic"
+	}
 });
 
 export default EditScheduleScreen;
