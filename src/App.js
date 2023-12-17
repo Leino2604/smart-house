@@ -13,21 +13,27 @@ const Stack = createStackNavigator();
 
 export default function App() {
 	return (
-		<View style={styles.container}>
-			{/* <NavigationContainer>
-				<Stack.Navigator initialRouteName="HomeScreen">
-					<Stack.Screen name="Home" component={HomeScreen} />
-					<Stack.Screen name="Schedule" component={ScheduleScreen} />
-					<Stack.Screen
-						name="EditSchedule"
-						component={EditScheduleScreen}
-					/>
-				</Stack.Navigator>
-			</NavigationContainer> */}
-      		<HomeScreen />
-			{/* <ThresholdScreen /> */}
-			<StatusBar style="auto" />
-		</View>
+		<NavigationContainer>
+			<Stack.Navigator
+				screenOptions={{headerShown: false}}
+			>
+				<Stack.Screen
+					name="HomeScreen"
+					component={HomeScreen}
+					options={{title: "Home"}}
+				/>
+				<Stack.Screen 
+					name="EditScheduleScreen"
+					component={EditScheduleScreen}
+					options={{title: "Edit schedule"}}
+				/>
+				<Stack.Screen
+					name="ScheduleScreen"
+					component={ScheduleScreen}
+					options={{title: "Schedule"}}
+				/>
+			</Stack.Navigator>
+		</NavigationContainer>
 	);
 }
 

@@ -12,11 +12,13 @@ import {
 } from "react-native";
 import MenuBar from "../components/menu";
 import ToggleSwitch from "../components/ToggleSwitch";
-import { useNavigation } from "@react-navigation/native";
+import NewIcon from "../components/newIcon";
+import { LinearGradient } from "expo-linear-gradient";
+// import { useNavigation } from "@react-navigation/native";
 
 const BACKEND_API = "https://smart-house-api.onrender.com/";
 
-const ScheduleScreen = () => {
+const ScheduleScreen = ({navigation}) => {
 	// const navigation = useNavigation();
 
 	const [scheduleList, setScheduleList] = useState([
@@ -86,24 +88,37 @@ const ScheduleScreen = () => {
 		setScheduleList(newScheduleList);
 	}
 
+	function navigateToScreen(screenName) {
+		console.log(screenName)
+		navigation.navigate(screenName, {});
+	}
+
 	return (
 		<View style={scheduleScreenStyle.container}>
-			<View style={scheduleScreenStyle.schedule}>
-				{/* <Text>Scehdule</Text> */}
+			<LinearGradient 
+				style={scheduleScreenStyle.schedule}
+				colors={["#004282", "#5899e2"]}
+			>
+				<StatusBar 
+					barStyle={"light-content"}
+				/>
 				<TouchableOpacity
-					// onPress={() => navigation.navigate("EditSchedule")}
+					style={scheduleScreenStyle.newIcon}
 				>
-					<Image
-						source={require("../assets/plus_icon.png")}
-						style={scheduleScreenStyle.plusIcon}
-					/>
+					<NewIcon />
 				</TouchableOpacity>
 				<ScrollView style={scheduleStyle.container}>
 					{scheduleList.map((scheduleItem, idx) => {
 						const hour = getHourIn24Hours(scheduleItem.date);
 						const minute = getMinute(scheduleItem.date);
 						return (
-							<View style={scheduleItemStyle.container} key={idx}>
+							<LinearGradient 
+								style={scheduleItemStyle.container} key={idx}
+								colors={["rgb(63, 76, 119)","rgb(32, 38, 57)"]}
+								locations={[0.114, 0.702]}
+								start={{x: 0, y: 0}}
+								end={{x: 1, y: 0}}
+							>
 								<View style={scheduleItemStyle.equipmentInfo}>
 									<Text style={scheduleItemStyle.timeText}>
 										{hour}:{minute}
@@ -138,12 +153,12 @@ const ScheduleScreen = () => {
 										scheduleItemToggleSwitchStyle.container
 									}
 								/>
-							</View>
+							</LinearGradient>
 						);
 					})}
 				</ScrollView>
-			</View>
-			<MenuBar />
+			</LinearGradient>
+			<MenuBar onPressIcon={navigateToScreen} />
 		</View>
 	);
 };
@@ -155,22 +170,18 @@ const scheduleScreenStyle = StyleSheet.create({
 		flexDirection: "column",
 		width: "100%",
 		height: "100%",
-		gap: 39,
 	},
 	schedule: {
 		display: "flex",
 		flexDirection: "column",
 		width: "100%",
-		height: "89.22%",
-		backgroundColor: "#246EE9",
+		height: "93%",
 		borderBottomLeftRadius: 20,
 		borderBottomRightRadius: 20,
 	},
-	plusIcon: {
+	newIcon: {
 		marginTop: "8.90%",
 		marginLeft: "78.46%",
-		width: 60,
-		height: 45,
 	},
 });
 
@@ -184,24 +195,32 @@ const scheduleItemStyle = StyleSheet.create({
 	container: {
 		display: "flex",
 		flexDirection: "row",
+		width: "80%",
+		height: "12.5%",
 		justifyContent: "center",
 		alignItems: "center",
 		marginBottom: "5.71%",
 		gap: 87,
+		borderWidth: 1,
+		borderRadius: 10,
+		borderColor: "#000000",
+		marginLeft: "10%",
 	},
 	timeText: {
-		color: "#FFFFFF",
-		fontSize: 48,
+		color: "#E5E5E5",
+		fontSize: 45,
 	},
 	equipmentText: {
-		color: "#FFFFFF",
+		color: "#E5E5E5",
 		fontSize: 20,
 	},
 	dateText: {},
 	equipmentInfo: {
+		marginLeft: "22.5%",
 		display: "flex",
 		flexDirection: "column",
 		justifyContent: "flex-start",
+		alignItems: "flex-start"
 	},
 });
 

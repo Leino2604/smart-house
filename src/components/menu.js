@@ -5,7 +5,20 @@ import ClockIcon from "./clockIcon";
 import SettingIcon from "./settingIcon"
 import {LinearGradient} from "expo-linear-gradient";
 
-const MenuBar = () => {
+const MenuBar = (props) => {
+    function pressHomeIcon() {
+        props.onPressIcon("HomeScreen");
+    }
+
+    function pressClockIcon() {
+        console.log(props.onPressIcon)
+        props.onPressIcon("ScheduleScreen");
+    }
+
+    function pressSettingIcon() {
+        props.onPressIcon("EditScheduleScreen");
+    }
+
     return (
         <LinearGradient
             colors={["#f9fcff", "#dee4ea"]}
@@ -13,13 +26,19 @@ const MenuBar = () => {
             end={{x: 1, y: 0}}
             style={menuBarStyle.container}
         >
-            <TouchableOpacity>
+            <TouchableOpacity
+                onPress={pressHomeIcon}
+            >
                 <HomeIcon />
             </TouchableOpacity>
-            <TouchableOpacity>
+            <TouchableOpacity
+                onPress={pressClockIcon}
+            >
                 <ClockIcon />
             </TouchableOpacity>
-            <TouchableOpacity>
+            <TouchableOpacity
+                onPress={pressSettingIcon}
+            >
                 <SettingIcon />
             </TouchableOpacity>
         </LinearGradient>

@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import axios from "axios";
 import { LinearGradient } from "expo-linear-gradient";
-import { useFonts } from "expo-font";
 
 
 import UserIcon from "../components/userIcon";
@@ -19,10 +18,9 @@ import LightBulbIcon from "../components/lightBulbIcon";
 import ThermometerIcon from "../components/thermometerIcon";
 import HumiditymeterIcon from "../components/humiditymeterIcon";
 import * as SplashScreen from "expo-splash-screen";
+import { useFonts } from "expo-font";
 
-SplashScreen.preventAutoHideAsync();
-
-const HomeScreen = () => {
+const HomeScreen = ({navigation}) => {
 	const [user, setUser] = useState(initialUser);
 	const [fanEnabled, setFanEnabled] = useState(false);
 	const [lightEnabled, setLightEnabled] = useState(false);
@@ -30,36 +28,38 @@ const HomeScreen = () => {
 	const [humidity, setHumidity] = useState(70.0);
 
 	/* Used to load new fonts */
-	const [fontsLoaded, fontsError] = useFonts({
-		"Karla-Regular": require("../assets/fonts/Karla-Regular.ttf"),
+	const [fontsLoaded, setFontsLoaded] = useFonts({
+		"Karla-Regular": require("../assets/fonts/Karla-Regular.ttf")
 	});
-
-	const onLayoutRootView = useCallback(async () => {
-		if (fontsLoaded || fontsError) {
-			await SplashScreen.hideAsync();
+	useEffect(() => {
+		async function loadFonts() {
+			await SplashScreen.preventAutoHideAsync();
 		}
-	}, [fontsLoaded, fontsError])
-
-	if (!fontsLoaded && !fontsError) {
+		loadFonts();
+	}, [])
+	
+	if (!fontsLoaded) {
 		return null;
+	} else {
+		SplashScreen.hideAsync();
 	}
 
-	// Function to fetch data from the API
-	const fetchData = async (url, setDataFunction) => {
-		try {
-			const headers = {
-				"X-AIO-Key": "aio_TUVE91jHx4brvdbZ36a9P82TnYTV",
-				"Content-Type": "application/json",
-			};
+	// // Function to fetch data from the API
+	// const fetchData = async (url, setDataFunction) => {
+	// 	try {
+	// 		const headers = {
+	// 			"X-AIO-Key": "aio_TUVE91jHx4brvdbZ36a9P82TnYTV",
+	// 			"Content-Type": "application/json",
+	// 		};
 
-			const response = await axios.get(url, { headers });
-			setDataFunction(response.data.value);
+	// 		const response = await axios.get(url, { headers });
+	// 		setDataFunction(response.data.value);
 
-			console.log(response.data.value)
-		} catch (error) {
-			console.error("Error fetching data:", error);
-		}
-	};
+	// 		console.log(response.data.value)
+	// 	} catch (error) {
+	// 		console.error("Error fetching data:", error);
+	// 	}
+	// };
 
 	// Effect to fetch data initially and update every 3 seconds
 	// useEffect(() => {
@@ -113,10 +113,14 @@ const HomeScreen = () => {
 		setLightEnabled((currState) => !currState);
 	}
 
+	function navigateToScreen(screenName) {
+		console.log(screenName)
+		navigation.navigate(screenName, {})
+	}
+
 	return (
 		<View 
 			style={homeScreenStyle.container}
-			onLayout={onLayoutRootView}
 		>
 			<LinearGradient 
 				style={homeScreenStyle.main}
@@ -227,7 +231,7 @@ const HomeScreen = () => {
 					</ScrollView>
 				</View>
 			</LinearGradient>
-			<MenuBar />
+			<MenuBar onPressIcon={navigateToScreen} />
 		</View>
 	);
 };
