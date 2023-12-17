@@ -6,11 +6,11 @@ import {
 	TouchableOpacity,
 	Modal,
 	Alert,
+	StatusBar
 } from "react-native";
 import {LinearGradient} from "expo-linear-gradient";
 import Slider from "@react-native-community/slider";
 import ToggleSwitch from "../components/ToggleSwitch";
-import { StatusBar } from "expo-status-bar";
 import { Calendar } from "react-native-calendars";
 import {useFonts} from "expo-font";
 
@@ -20,7 +20,10 @@ import MenuBar from "../components/menu";
 import CalendarIcon from "../components/calendarIcon";
 import TopArrowIcon from "../components/topArrowIcon";
 import BottomArrowIcon from "../components/bottomArrowIcon";
-const EditScheduleScreen = () => {
+import { createStackNavigator } from "@react-navigation/stack";
+import { NavigationContainer } from "@react-navigation/native";
+
+const EditScheduleScreen = ({navigation}) => {
 	/* Used to config calendar */
 	const TODAY = new Date(2023, 11, 30);
 	const DEFAULT_SELECTED_WEEK_DAYS = [false, false, false, false, false, false, false];
@@ -63,7 +66,6 @@ const EditScheduleScreen = () => {
 				return dayFlag;
 			}
 		});
-		console.log(nextSelectedWeekDays);
 		setSelectedWeekDays(nextSelectedWeekDays);
 	}
 
@@ -72,6 +74,11 @@ const EditScheduleScreen = () => {
 		const month = (date.getMonth() >= 10) ? date.getMonth().toString() : "0" + date.getMonth().toString();
 		const year = date.getFullYear().toString();
 		return year + "-" + month + "-" + day;
+	}
+
+	function navigateToScreen(screenName) {
+		console.log(screenName)
+		navigation.navigate(screenName, {});
 	}
 
 	/* Used to decorate date on calendar */
@@ -98,7 +105,9 @@ const EditScheduleScreen = () => {
 				style={editScheduleViewStyle.container}
 				colors={["#004282", "#5899e2"]}
 			>
-				<StatusBar />
+				<StatusBar 
+					barStyle={"light-content"}
+				/>
 
 				<View style={topArrowIconViewStyle.container}>
 					<TouchableOpacity>
@@ -292,7 +301,7 @@ const EditScheduleScreen = () => {
 					</LinearGradient>
 				</View>
 			</LinearGradient>
-			<MenuBar />
+			<MenuBar onPressIcon={navigateToScreen}/>
 		</View>
 	);
 };
@@ -311,7 +320,6 @@ const editScheduleViewStyle = StyleSheet.create({
 	container: {
 		borderBottomLeftRadius: 20,
 		borderBottomRightRadius: 20,
-		// height: "89.22%",
 		height: "93%",
 		width: "100%",
 	}

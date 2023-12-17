@@ -20,7 +20,7 @@ import HumiditymeterIcon from "../components/humiditymeterIcon";
 import * as SplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
 
-const HomeScreen = () => {
+const HomeScreen = ({navigation}) => {
 	const [user, setUser] = useState(initialUser);
 	const [fanEnabled, setFanEnabled] = useState(false);
 	const [lightEnabled, setLightEnabled] = useState(false);
@@ -29,7 +29,7 @@ const HomeScreen = () => {
 
 	/* Used to load new fonts */
 	const [fontsLoaded, setFontsLoaded] = useFonts({
-		"Karlar-Regular": require("../assets/fonts/Karla-Regular.ttf")
+		"Karla-Regular": require("../assets/fonts/Karla-Regular.ttf")
 	});
 	useEffect(() => {
 		async function loadFonts() {
@@ -112,10 +112,15 @@ const HomeScreen = () => {
 	function handleLightEnabledToggleSwitch() {
 		setLightEnabled((currState) => !currState);
 	}
+
+	function navigateToScreen(screenName) {
+		console.log(screenName)
+		navigation.navigate(screenName, {})
+	}
+
 	return (
 		<View 
 			style={homeScreenStyle.container}
-			// onLayout={onLayoutRootView}
 		>
 			<LinearGradient 
 				style={homeScreenStyle.main}
@@ -226,7 +231,7 @@ const HomeScreen = () => {
 					</ScrollView>
 				</View>
 			</LinearGradient>
-			<MenuBar />
+			<MenuBar onPressIcon={navigateToScreen} />
 		</View>
 	);
 };
@@ -236,7 +241,7 @@ const homeScreenStyle = StyleSheet.create({
 		backgroundColor: "#FFFFFF",
 		width: "100%",
 		height: "100%",
-		// fontFamily: "Karla-Regular"
+		fontFamily: "Karla-Regular"
 	},
 	main: {
 		display: "flex",

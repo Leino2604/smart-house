@@ -18,7 +18,7 @@ import { LinearGradient } from "expo-linear-gradient";
 
 const BACKEND_API = "https://smart-house-api.onrender.com/";
 
-const ScheduleScreen = () => {
+const ScheduleScreen = ({navigation}) => {
 	// const navigation = useNavigation();
 
 	const [scheduleList, setScheduleList] = useState([
@@ -75,7 +75,6 @@ const ScheduleScreen = () => {
 	}
 
 	function handleScheduleItemToggleSwitch(index) {
-		console.log("here")
 		const newScheduleList = scheduleList.map((scheduleItem, idx) => {
 			if (idx === index) {
 				return {
@@ -89,6 +88,11 @@ const ScheduleScreen = () => {
 		setScheduleList(newScheduleList);
 	}
 
+	function navigateToScreen(screenName) {
+		console.log(screenName)
+		navigation.navigate(screenName, {});
+	}
+
 	return (
 		<View style={scheduleScreenStyle.container}>
 			<LinearGradient 
@@ -98,9 +102,7 @@ const ScheduleScreen = () => {
 				<StatusBar 
 					barStyle={"light-content"}
 				/>
-				<Text>Your schedule</Text>
 				<TouchableOpacity
-					// onPress={() => navigation.navigate("EditSchedule")}
 					style={scheduleScreenStyle.newIcon}
 				>
 					<NewIcon />
@@ -156,7 +158,7 @@ const ScheduleScreen = () => {
 					})}
 				</ScrollView>
 			</LinearGradient>
-			<MenuBar />
+			<MenuBar onPressIcon={navigateToScreen} />
 		</View>
 	);
 };
