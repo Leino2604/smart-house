@@ -12,9 +12,10 @@ import {
 import {LinearGradient} from "expo-linear-gradient";
 import Slider from "@react-native-community/slider";
 import ToggleSwitch from "../components/ToggleSwitch";
-import { Calendar } from "react-native-calendars";
 import {useFonts} from "expo-font";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import TimeScrollPicker from "../components/timeScrollPicker";
+
 
 import FanIcon from "../components/fanIcon";
 import LightBulbIcon from "../components/lightBulbIcon";
@@ -38,8 +39,12 @@ const EditScheduleScreen = ({navigation}) => {
 	const [calendarVisible, setCalendarVisible] = useState(false);
 	const [selectedDate, setSelectedDate] = useState(TODAY);
 
-	/* Used to config date modal */
+	/* Used to config time modal */
 	const [timeModalVisible, setTimeModalVisible] = useState(false);
+
+	/* Used to config time scroll picker*/
+	const hours = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
+
 	
 	function toggleSmartLightSwitch() {
 		setSmartLightEnabled((preState) => !preState);
@@ -134,11 +139,10 @@ const EditScheduleScreen = ({navigation}) => {
 					</TouchableOpacity>
 				</View>
 
-				<TouchableOpacity
-					onPress={() => pressTimePicker()}
-				>
-					<Text style={timeViewStyle.container}>06:30</Text>
-				</TouchableOpacity>
+				<TimeScrollPicker 
+					limit={62.5}
+					defaultOffsetHour={24}
+				/>
 
 				<DateTimePickerModal
 					is24Hour={true}
@@ -362,7 +366,7 @@ const timeViewStyle = StyleSheet.create({
 	container: {
 		fontSize: 69,
 		textAlign: "center",
-		color: "#FFFFFF",
+		color: "#121212",
 	},
 });
 
