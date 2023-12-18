@@ -6,13 +6,15 @@ import {
 	TouchableOpacity,
 	Modal,
 	Alert,
-	StatusBar
+	StatusBar,
+	TouchableWithoutFeedback
 } from "react-native";
 import {LinearGradient} from "expo-linear-gradient";
 import Slider from "@react-native-community/slider";
 import ToggleSwitch from "../components/ToggleSwitch";
 import { Calendar } from "react-native-calendars";
 import {useFonts} from "expo-font";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 import FanIcon from "../components/fanIcon";
 import LightBulbIcon from "../components/lightBulbIcon";
@@ -20,12 +22,12 @@ import MenuBar from "../components/menu";
 import CalendarIcon from "../components/calendarIcon";
 import TopArrowIcon from "../components/topArrowIcon";
 import BottomArrowIcon from "../components/bottomArrowIcon";
-import { createStackNavigator } from "@react-navigation/stack";
-import { NavigationContainer } from "@react-navigation/native";
 
 const EditScheduleScreen = ({navigation}) => {
 	/* Used to config calendar */
-	const TODAY = new Date(2023, 11, 30);
+	const TODAY = new Date(2023, 12, 20);
+	const MINIMUM_DATE = new Date(2023, 12, 1);
+	const MAXIMUM_DATE = new Date(2023, 12, 31);
 	const DEFAULT_SELECTED_WEEK_DAYS = [false, false, false, false, false, false, false];
 	/* Used to select on the calendar */
 	const weekDays = ["M", "T", "W", "T", "F", "S", "S"];
@@ -33,8 +35,11 @@ const EditScheduleScreen = ({navigation}) => {
 
 	const [smartLightEnabled, setSmartLightEnabled] = useState(false);
 	const [notificationEnabled, setNotificationEnabled] = useState(false);
-	const [calendarPicked, setCalendarPicked] = useState(false);
+	const [calendarVisible, setCalendarVisible] = useState(false);
 	const [selectedDate, setSelectedDate] = useState(TODAY);
+
+	/* Used to config date modal */
+	const [timeModalVisible, setTimeModalVisible] = useState(false);
 	
 	function toggleSmartLightSwitch() {
 		setSmartLightEnabled((preState) => !preState);
@@ -45,18 +50,9 @@ const EditScheduleScreen = ({navigation}) => {
 	}
 
 	function pressCalendarIcon() {
-		setCalendarPicked((prevState) => !prevState);
+		setCalendarVisible((prevState) => !prevState);
 	}
 
-	function pressCloseCalendarButton() {
-		console.log(calendarPicked)
-		setCalendarPicked(false);
-	}
-
-	function pressCloseCalendarAgain() {
-		Alert.alert("Calendar has been close");
-		setCalendarPicked((prevState) => !prevState);
-	}
 
 	function pressWeekDayButton(index) {
 		const nextSelectedWeekDays = selectedWeekDays.map((dayFlag, idx) => {
@@ -77,8 +73,28 @@ const EditScheduleScreen = ({navigation}) => {
 	}
 
 	function navigateToScreen(screenName) {
-		console.log(screenName)
 		navigation.navigate(screenName, {});
+	}
+
+	function pressTimePicker() {
+		setTimeModalVisible(true);
+	}
+
+	function hideTimePicker() {
+		setTimeModalVisible(false);
+	}
+
+	function handleTimeConfirmation(datetime) {
+		console.log(datetime);
+		setTimeModalVisible(false);
+	}
+
+	function handleDateConfirmation(datetime) {
+		console.log(datetime);
+	}
+
+	function hideCalendarPicker() {
+		setCalendarVisible(false);
 	}
 
 	/* Used to decorate date on calendar */
@@ -118,7 +134,22 @@ const EditScheduleScreen = ({navigation}) => {
 					</TouchableOpacity>
 				</View>
 
-				<Text style={timeViewStyle.container}>06:30</Text>
+				<TouchableOpacity
+					onPress={() => pressTimePicker()}
+				>
+					<Text style={timeViewStyle.container}>06:30</Text>
+				</TouchableOpacity>
+
+				<DateTimePickerModal
+					is24Hour={true}
+					isDarkModeEnabled={true}
+					isVisible={timeModalVisible}
+					mode="time"
+					onConfirm={(date) => handleTimeConfirmation(date)}
+					onCancel={hideTimePicker}
+					timePickerModeAndroid="clock"
+				/>
+				
 
 				<View style={bottomArrowIconViewStyle.container}>
 					<TouchableOpacity>
@@ -134,39 +165,18 @@ const EditScheduleScreen = ({navigation}) => {
 						<Text style={dayTextStyle.container}>
 							Friday, October 27
 						</Text>
-						<Modal
-							animationType="slide"
-							visible={calendarPicked}
-							transparent={true}
-							onRequestClose={pressCloseCalendarAgain}
-        				>
-							<Calendar 
-								style={calendarPickerStyle.container}
-								theme={{
-									backgroundColor: "#FFFFFF",
-									calendarBackground: "#121212",
-									textSectionTitleColor: "#b6c1cd",
-									
-									selectedDayBackgroundColor: "#00adf5",
-									selectedDayTextColor: "#FFFFFF",
-									todayTextColor: '#00adf5',
-									dayTextColor: "#E5E5E5",
-									monthTextColor: "#E5E5E5",
-									textDisabledColor: "#2d4150"
-								}}
-								firstDay={1}
-								enableSwipeMonths={true}
-								minDate="2023-12-01"
-								maxDate="2024-12-31"
-								markedDates={markedDateOnCalendar}
-							/>
-							<TouchableOpacity
-								style={calendarPickerStyle.closeButton}
-								onPress={pressCloseCalendarButton}
-							>
-								<Text style={calendarPickerStyle.closeButtonText}>Close</Text>
-							</TouchableOpacity>
-						</Modal>
+						<DateTimePickerModal
+							mode="date"
+							display="calendar"
+							minimumDate={MINIMUM_DATE}
+							maximumDate={MAXIMUM_DATE}
+							is24Hour={true}
+							isDarkModeEnabled={true}
+							isVisible={calendarVisible}
+							onConfirm={(datetime) => handleDateConfirmation(datetime)}
+							onCancel={hideCalendarPicker}
+						/>
+
 						<TouchableOpacity
 							onPress={pressCalendarIcon}
 						>
@@ -300,7 +310,7 @@ const EditScheduleScreen = ({navigation}) => {
 						</TouchableOpacity>
 					</LinearGradient>
 				</View>
-			</LinearGradient>
+			</LinearGradient> 
 			<MenuBar onPressIcon={navigateToScreen}/>
 		</View>
 	);
@@ -314,6 +324,9 @@ const editScheduleScreenViewStyle = StyleSheet.create({
 		height: "100%",
 		fontFamily: "Karla-Regular"
 	},
+	calendarVisible: {
+		backgroundColor: "rgba(0, 0, 0, 0.5)"
+	}
 });
 
 const editScheduleViewStyle = StyleSheet.create({
