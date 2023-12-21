@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import PropTypes from 'prop-types';
 
-export default class ToogleSwitch extends Component {
+export default class ToggleSwitch extends Component {
     static propTypes = {
         onValueChange: PropTypes.func,
         disabled: PropTypes.bool,
@@ -34,8 +34,8 @@ export default class ToogleSwitch extends Component {
         outerCircleStyle: PropTypes.object,
         renderActiveText: PropTypes.bool,
         renderInActiveText: PropTypes.bool,
-        switchWidth: PropTypes.Number,
-        switchHeight: PropTypes.Number,
+        switchWidth: PropTypes.number,
+        switchHeight: PropTypes.number,
         switchLeftPx: PropTypes.number,
         switchRightPx: PropTypes.number,
         switchWidthMultiplier: PropTypes.number,
