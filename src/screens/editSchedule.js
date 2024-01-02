@@ -13,6 +13,8 @@ import Slider from "@react-native-community/slider";
 import ToggleSwitch from "../components/ToggleSwitch";
 import { Calendar } from "react-native-calendars";
 import {useFonts} from "expo-font";
+import {DateTimePicker, DateTimePickerAndroid} from '@react-native-community/datetimepicker';
+
 
 import FanIcon from "../components/fanIcon";
 import LightBulbIcon from "../components/lightBulbIcon";
@@ -109,7 +111,7 @@ const EditScheduleScreen = ({navigation}) => {
 					barStyle={"light-content"}
 				/>
 
-				<View style={topArrowIconViewStyle.container}>
+				{/* <View style={topArrowIconViewStyle.container}>
 					<TouchableOpacity>
 						<TopArrowIcon />
 					</TouchableOpacity>
@@ -127,7 +129,7 @@ const EditScheduleScreen = ({navigation}) => {
 					<TouchableOpacity>
 						<BottomArrowIcon />
 					</TouchableOpacity>
-				</View>
+				</View> */}
 
 				<View style={calendarViewStyle.container}>
 					<View style={daySelectionViewStyle.container}>
@@ -208,7 +210,7 @@ const EditScheduleScreen = ({navigation}) => {
 							style={smartFanLevelChangeSliderStyle.container}
 							minimumValue={0}
 							maximumValue={100}
-							// interval={20}
+							interval={20}
 							thumbTintColor={"#006A64"}
 						/>
 					</LinearGradient>

@@ -158,7 +158,7 @@ const ScheduleScreen = ({navigation}) => {
 					})}
 				</ScrollView>
 			</LinearGradient>
-			<MenuBar onPressIcon={navigateToScreen} />
+			{/* <MenuBar onPressIcon={navigateToScreen} /> */}
 		</View>
 	);
 };
@@ -175,7 +175,7 @@ const scheduleScreenStyle = StyleSheet.create({
 		display: "flex",
 		flexDirection: "column",
 		width: "100%",
-		height: "93%",
+		height: "100%",
 		borderBottomLeftRadius: 20,
 		borderBottomRightRadius: 20,
 	},

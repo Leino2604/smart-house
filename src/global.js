@@ -1,1 +1,1 @@
-global.AdaFruitIOKey = "aio_Qcho88bGXSX5zL3bA541aDM7a6GC";
+global.AdaFruitIOKey = "aio_HEVX73Fqm5njp9BkYq3ilLQK6otD";
