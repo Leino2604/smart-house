@@ -1,15 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import MenuBar from "../components/menu";
-import {
-	ScrollView,
-	StatusBar,
-	View,
-	StyleSheet,
-	Text,
-} from "react-native";
+import { ScrollView, StatusBar, View, StyleSheet, Text } from "react-native";
 import axios from "axios";
 import { LinearGradient } from "expo-linear-gradient";
-
+import "../global";
 
 import UserIcon from "../components/userIcon";
 import FanIcon from "../components/fanIcon";
@@ -20,90 +14,73 @@ import HumiditymeterIcon from "../components/humiditymeterIcon";
 import * as SplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
 
-const HomeScreen = ({navigation}) => {
+const HomeScreen = ({ navigation }) => {
 	const [user, setUser] = useState(initialUser);
 	const [fanEnabled, setFanEnabled] = useState(false);
 	const [lightEnabled, setLightEnabled] = useState(false);
-	const [temp, setTemp] = useState(20.0);
-	const [humidity, setHumidity] = useState(70.0);
+	const [temp, setTemp] = useState(0.0);
+	const [humidity, setHumidity] = useState(0.0);
+
+	const AdaFruitIOKey = global.AdaFruitIOKey;
+	console.log(AdaFruitIOKey);
+
+	// Function to fetch data from the API
+	const fetchData = async (url, setDataFunction) => {
+		try {
+			const headers = {
+				"X-AIO-Key": AdaFruitIOKey,
+				"Content-Type": "application/json",
+			};
+
+			const response = await axios.get(url, { headers });
+			setDataFunction(response.data.value);
+
+			console.log(response.data.value);
+		} catch (error) {
+			console.error("Error fetching data:", error);
+		}
+	};
+
+	useEffect(() => {
+		// Fetch data initially
+		fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.fan-speed/data/last", setFanEnabled);
+		fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.light-switch/data/last", setLightEnabled);
+		fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.temp/data/last", setTemp);
+		fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.humid/data/last", setHumidity);
+
+		// Set up interval to fetch data every 3 seconds
+		const interval = setInterval(() => {
+			console.log("----------------------------------");
+			fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.fan-speed/data/last", setFanEnabled);
+			fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.light-switch/data/last", setLightEnabled);
+			fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.temp/data/last", setTemp);
+			fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.humid/data/last", setHumidity);
+
+			console.log(fanEnabled, lightEnabled, temp, humidity)
+		}, 3000);
+
+		// Clean up interval on component unmount
+		return () => clearInterval(interval);
+	}, []);
 
 	/* Used to load new fonts */
 	const [fontsLoaded, setFontsLoaded] = useFonts({
-		"Karla-Regular": require("../assets/fonts/Karla-Regular.ttf")
+		"Karla-Regular": require("../assets/fonts/Karla-Regular.ttf"),
 	});
-	useEffect(() => {
-		async function loadFonts() {
-			await SplashScreen.preventAutoHideAsync();
-		}
-		loadFonts();
-	}, [])
-	
+
 	if (!fontsLoaded) {
 		return null;
 	} else {
 		SplashScreen.hideAsync();
 	}
 
-	// // Function to fetch data from the API
-	// const fetchData = async (url, setDataFunction) => {
-	// 	try {
-	// 		const headers = {
-	// 			"X-AIO-Key": "aio_TUVE91jHx4brvdbZ36a9P82TnYTV",
-	// 			"Content-Type": "application/json",
-	// 		};
-
-	// 		const response = await axios.get(url, { headers });
-	// 		setDataFunction(response.data.value);
-
-	// 		console.log(response.data.value)
-	// 	} catch (error) {
-	// 		console.error("Error fetching data:", error);
-	// 	}
-	// };
-
-	// Effect to fetch data initially and update every 3 seconds
 	// useEffect(() => {
-	// 	// Fetch data initially
-	// 	fetchData(
-	// 		"https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.fan-speed/data/last",
-	// 		setFanEnabled,
-	// 	);
-	// 	fetchData(
-	// 		"https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.light-switch/data/last",
-	// 		setLightEnabled,
-	// 	);
-	// 	fetchData(
-	// 		"https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.temp/data/last",
-	// 		setTemp,
-	// 	);
-	// 	fetchData(
-	// 		"https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.humid/data/last",
-	// 		setHumidity,
-	// 	);
-
-	// 	// Set up interval to fetch data every 3 seconds
-	// 	const interval = setInterval(() => {
-	// 		fetchData(
-	// 			"https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.fan-speed/data/last",
-	// 			setFanEnabled,
-	// 		);
-	// 		fetchData(
-	// 			"https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.light-switch/data/last",
-	// 			setLightEnabled,
-	// 		);
-	// 		fetchData(
-	// 			"https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.temp/data/last",
-	// 			setTemp,
-	// 		);
-	// 		fetchData(
-	// 			"https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.humid/data/last",
-	// 			setHumidity,
-	// 		);
-	// 	}, 3000);
-
-	// 	// Clean up interval on component unmount
-	// 	return () => clearInterval(interval);
-	// }, []); // Empty dependency array means this effect runs once after the initial render
+	// 	async function loadFonts() {
+	// 		await SplashScreen.preventAutoHideAsync();
+	// 	}
+	// 	loadFonts();
+	// }, [])
+	
 
 	function handleFanEnabledToggleSwitch() {
 		setFanEnabled((currState) => !currState);
@@ -114,25 +91,16 @@ const HomeScreen = ({navigation}) => {
 	}
 
 	function navigateToScreen(screenName) {
-		console.log(screenName)
-		navigation.navigate(screenName, {})
+		console.log(screenName);
+		navigation.navigate(screenName, {});
 	}
 
 	return (
-		<View 
-			style={homeScreenStyle.container}
-		>
-			<LinearGradient 
-				style={homeScreenStyle.main}
-				colors={["#004282", "#5899e2"]}
-			>
-				<StatusBar 
-					barStyle={"light-content"}
-				/>
+		<View style={homeScreenStyle.container}>
+			<LinearGradient style={homeScreenStyle.main} colors={["#004282", "#5899e2"]}>
+				<StatusBar barStyle={"light-content"} />
 				<View style={userInfoStyle.container}>
-					<Text style={userInfoStyle.greetingMsg}>
-						Hi {user.name}
-					</Text>
+					<Text style={userInfoStyle.greetingMsg}>Hi {user.name}</Text>
 					<View style={userInfoStyle.icon}>
 						<UserIcon />
 					</View>
@@ -141,12 +109,12 @@ const HomeScreen = ({navigation}) => {
 					<ScrollView>
 						<Text style={equipmentInfoStyle.title}>Devices</Text>
 						<View style={equipmentInfoStyle.content}>
-							<LinearGradient 
+							<LinearGradient
 								style={fanStyle.container}
 								colors={["rgb(63, 76, 119)", "rgb(32, 38, 57)"]}
 								locations={[0.114, 0.702]}
-								start={{x: 0, y: 0}}
-								end={{x: 1, y: 0}}
+								start={{ x: 0, y: 0 }}
+								end={{ x: 1, y: 0 }}
 							>
 								<View style={fanStyle.content}>
 									<FanIcon />
@@ -165,65 +133,55 @@ const HomeScreen = ({navigation}) => {
 								</View>
 								<Text style={fanStyle.title}>Smart Fan</Text>
 							</LinearGradient>
-							<LinearGradient 
+							<LinearGradient
 								style={lightStyle.container}
 								colors={["rgb(63, 76, 119)", "rgb(32, 38, 57)"]}
 								locations={[0.114, 0.702]}
-								start={{x: 0, y: 0}}
-								end={{x: 1, y: 0}}
+								start={{ x: 0, y: 0 }}
+								end={{ x: 1, y: 0 }}
 							>
 								<View style={lightStyle.content}>
 									<LightBulbIcon />
 									<ToggleSwitch
 										value={lightEnabled}
-										onValueChange={
-											handleLightEnabledToggleSwitch
-										}
+										onValueChange={handleLightEnabledToggleSwitch}
 										activeText={"On"}
 										inactiveText={"Off"}
-										activeTextStyle={
-											lightEnabledToggleSwitchStyle.activeText
-										}
-										inactiveTextStyle={
-											fanEnabledToggleSwitchStyle.inactiveText
-										}
+										activeTextStyle={lightEnabledToggleSwitchStyle.activeText}
+										inactiveTextStyle={fanEnabledToggleSwitchStyle.inactiveText}
 										backgroundInactive={"#FFFFFF"}
 										backgroundActive={"#90EE90"}
-										containerStyle={
-											lightEnabledToggleSwitchStyle.container
-										}
+										containerStyle={lightEnabledToggleSwitchStyle.container}
 										circleInActiveColor={"#FFFFFF"}
 									/>
 								</View>
-								<Text style={lightStyle.title}>
-									Smart Light
-								</Text>
+								<Text style={lightStyle.title}>Smart Light</Text>
 							</LinearGradient>
 
-							<LinearGradient 
+							<LinearGradient
 								style={thermometerStyle.container}
 								colors={["rgb(63, 76, 119)", "rgb(32, 38, 57)"]}
 								locations={[0.114, 0.702]}
-								start={{x: 0, y: 0}}
-								end={{x: 1, y: 0}}
+								start={{ x: 0, y: 0 }}
+								end={{ x: 1, y: 0 }}
 							>
 								<View style={thermometerStyle.content}>
 									<ThermometerIcon />
-                                    <Text style={value.tempValue}>{temp}</Text>
+									<Text style={value.tempValue}>{temp}</Text>
 								</View>
 								<Text style={fanStyle.title}>Temperature</Text>
 							</LinearGradient>
-                            
-							<LinearGradient 
+
+							<LinearGradient
 								style={humiditymeterStyle.container}
 								colors={["rgb(63, 76, 119)", "rgb(32, 38, 57)"]}
 								locations={[0.114, 0.702]}
-								start={{x: 0, y: 0}}
-								end={{x: 1, y: 0}}
+								start={{ x: 0, y: 0 }}
+								end={{ x: 1, y: 0 }}
 							>
 								<View style={humiditymeterStyle.content}>
 									<HumiditymeterIcon />
-                                    <Text style={value.humidityValue}>{humidity}%</Text>
+									<Text style={value.humidityValue}>{humidity}%</Text>
 								</View>
 								<Text style={humiditymeterStyle.title}>Humidity</Text>
 							</LinearGradient>
@@ -231,7 +189,7 @@ const HomeScreen = ({navigation}) => {
 					</ScrollView>
 				</View>
 			</LinearGradient>
-			<MenuBar onPressIcon={navigateToScreen} />
+			{/* <MenuBar onPressIcon={navigateToScreen} /> */}
 		</View>
 	);
 };
@@ -241,16 +199,16 @@ const homeScreenStyle = StyleSheet.create({
 		backgroundColor: "#FFFFFF",
 		width: "100%",
 		height: "100%",
-		fontFamily: "Karla-Regular"
+		fontFamily: "Karla-Regular",
 	},
 	main: {
 		display: "flex",
 		flexDirection: "column",
 		width: "100%",
-		height: "93%",
+		height: "100%",
 		borderBottomLeftRadius: 20,
 		borderBottomRightRadius: 20,
-        paddingBottom: 75,  // Add padding at the bottom
+		paddingBottom: 75, // Add padding at the bottom
 	},
 });
 
@@ -285,12 +243,12 @@ const equipmentInfoStyle = StyleSheet.create({
 	container: {
 		marginTop: "10.62%",
 		marginLeft: "9.49%",
-        flexDirection: 'row',
-		height: "90%"
-    },
-    scrollView: {
-        flex: 1,
-    },
+		flexDirection: "row",
+		height: "90%",
+	},
+	scrollView: {
+		flex: 1,
+	},
 	title: {
 		color: "#E5E5E5",
 		fontWeight: "bold",
@@ -402,7 +360,7 @@ const humiditymeterStyle = StyleSheet.create({
 		fontWeight: "bold",
 		marginLeft: 25,
 	},
-})
+});
 
 const fanEnabledToggleSwitchStyle = StyleSheet.create({
 	container: {
@@ -429,18 +387,18 @@ const lightEnabledToggleSwitchStyle = StyleSheet.create({
 });
 
 const value = StyleSheet.create({
-    tempValue: {
-        // marginLeft: 'auto',  // Đẩy sang bên phải
+	tempValue: {
+		// marginLeft: 'auto',  // Đẩy sang bên phải
 		color: "#E5E5E5",
-        fontSize: 20,  // Tăng kích thước font
-    },
-    humidityValue: {
-        // borderWidth: 1,
-        // marginLeft: 'auto',  // Đẩy sang bên phải
+		fontSize: 20, // Tăng kích thước font
+	},
+	humidityValue: {
+		// borderWidth: 1,
+		// marginLeft: 'auto',  // Đẩy sang bên phải
 		color: "#E5E5E5",
-        fontSize: 20,
-    },
-})
+		fontSize: 20,
+	},
+});
 
 const initialUser = {
 	name: "John",
