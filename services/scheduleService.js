@@ -1,6 +1,6 @@
 //Will send data to adafruit feed to trigger when a time occured
 const axios = require("axios");
-const aio_key = "aio_fClV25jxEPfNzb2KUmpTMtpBthHL";
+const aio_key = global.AdaFruitIOKey;
 
 const BACKEND_API = "https://smart-house-api.onrender.com";
 let scheduleData = [];
