@@ -4,48 +4,54 @@ import {
 	StyleSheet,
 	Text,
 	TouchableOpacity,
-	Modal,
-	Alert,
 	StatusBar,
-	TouchableWithoutFeedback
 } from "react-native";
 import {LinearGradient} from "expo-linear-gradient";
 import Slider from "@react-native-community/slider";
 import ToggleSwitch from "../components/ToggleSwitch";
 import {useFonts} from "expo-font";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import TimeScrollPicker from "../components/timeScrollPicker";
-
+import WheelPicker from "react-native-wheely";
 
 
 import FanIcon from "../components/fanIcon";
 import LightBulbIcon from "../components/lightBulbIcon";
-import MenuBar from "../components/menu";
 import CalendarIcon from "../components/calendarIcon";
-import TopArrowIcon from "../components/topArrowIcon";
-import BottomArrowIcon from "../components/bottomArrowIcon";
 
-const EditScheduleScreen = ({navigation}) => {
+const HOURS = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"];
+const MINUTES = [
+	"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11",
+	"12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23",
+	"24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35",
+	"36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47",
+	"48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59"
+];
+const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+const EditScheduleScreen = ({navigation, route}) => {
+	const {schedule, created, onSave, other} = route.params
 	/* Used to config calendar */
-	const TODAY = new Date(2023, 12, 20);
-	const MINIMUM_DATE = new Date(2023, 12, 1);
-	const MAXIMUM_DATE = new Date(2023, 12, 31);
-	const DEFAULT_SELECTED_WEEK_DAYS = [false, false, false, false, false, false, false];
-	/* Used to select on the calendar */
-	const weekDays = ["M", "T", "W", "T", "F", "S", "S"];
-	const [selectedWeekDays, setSelectedWeekDays] = useState(DEFAULT_SELECTED_WEEK_DAYS);
+	function getMinimumDate(date) {
+		newDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+		newDate.setMonth(newDate.getMonth() - 1);
+		return newDate;
+	}
+	function getMaximumDate(date) {
+		newDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+		newDate.setFullYear(newDate.getFullYear() + 1);
+		return newDate;
+	}
+
+	const [currSchedule, setCurrSchedule] = useState(schedule);
+	const MINIMUM_DATE = getMinimumDate(currSchedule.date);
+	const MAXIMUM_DATE = getMaximumDate(currSchedule.date);
 
 	const [smartLightEnabled, setSmartLightEnabled] = useState(false);
 	const [notificationEnabled, setNotificationEnabled] = useState(false);
 	const [calendarVisible, setCalendarVisible] = useState(false);
-	const [selectedDate, setSelectedDate] = useState(TODAY);
-
-	/* Used to config time modal */
-	const [timeModalVisible, setTimeModalVisible] = useState(false);
 
 	/* Used to config time scroll picker*/
-	const hours = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
-
 	
 	function toggleSmartLightSwitch() {
 		setSmartLightEnabled((preState) => !preState);
@@ -59,64 +65,49 @@ const EditScheduleScreen = ({navigation}) => {
 		setCalendarVisible((prevState) => !prevState);
 	}
 
-
-	function pressWeekDayButton(index) {
-		const nextSelectedWeekDays = selectedWeekDays.map((dayFlag, idx) => {
-			if (idx == index) {
-				return !dayFlag;
-			} else {
-				return dayFlag;
-			}
-		});
-		setSelectedWeekDays(nextSelectedWeekDays);
-	}
-
-	function getDateAsStringKey(date) {
-		const day = (date.getDate() >= 10) ? date.getDate().toString() : "0" + date.getDate().toString();
-		const month = (date.getMonth() >= 10) ? date.getMonth().toString() : "0" + date.getMonth().toString();
-		const year = date.getFullYear().toString();
-		return year + "-" + month + "-" + day;
-	}
-
-	function navigateToScreen(screenName) {
-		navigation.navigate(screenName, {});
-	}
-
-	function pressTimePicker() {
-		setTimeModalVisible(true);
-	}
-
-	function hideTimePicker() {
-		setTimeModalVisible(false);
-	}
-
-	function handleTimeConfirmation(datetime) {
-		console.log(datetime);
-		setTimeModalVisible(false);
-	}
-
 	function handleDateConfirmation(datetime) {
-		console.log(datetime);
+		const newSchedule = {
+			...currSchedule,
+			date: datetime
+		};
+		setCurrSchedule(newSchedule);
 	}
 
 	function hideCalendarPicker() {
 		setCalendarVisible(false);
 	}
 
-	/* Used to decorate date on calendar */
-	const selectedDateAsStringKey = getDateAsStringKey(selectedDate);
-	const markedDateOnCalendar = {
-		[selectedDateAsStringKey] : {selected: true},
-		"2024-01-01": {marked: true}	
-	};
+	function scrollHour(hour) {
+		const newSchedule = {
+			...currSchedule,
+			hour: hour
+		};
+		setCurrSchedule(newSchedule);
+	}
 
-	/* Used to load new fonts */
-	const [fontsLoaded, fontsError] = useFonts({
-		"Karla-Regular": require("../assets/fonts/Karla-Regular.ttf")
-	});
-	
-	if (!fontsLoaded) {
-		return null;
+	function scrollMinute(minute) {
+		const newSchedule = {
+			...currSchedule,
+			minute: minute
+		};
+		setCurrSchedule(newSchedule)
+	}
+
+	function pressCancelButton() {
+		navigation.navigate("Schedule", {});
+	}
+
+	function changeFanSpeedValue(value) {
+		const newSchedule = {
+			...currSchedule,
+			fanSpeed: value
+		};
+		setCurrSchedule(newSchedule);
+	}
+
+	function pressSaveButton(schedule, created) {
+		onSave(schedule, created);
+		navigation.navigate("Schedule", {});
 	}
 
 	return (	
@@ -131,44 +122,39 @@ const EditScheduleScreen = ({navigation}) => {
 					barStyle={"light-content"}
 				/>
 
-				{/* <View style={topArrowIconViewStyle.container}>
-					<TouchableOpacity>
-						<TopArrowIcon />
-					</TouchableOpacity>
-					<TouchableOpacity>
-						<TopArrowIcon />
-					</TouchableOpacity>
+				<View
+					style={timePickerStyle.container}
+				>
+					<WheelPicker 
+						options={HOURS}
+						selectedIndex={currSchedule.date.getHours()}
+						onChange={(hour) => scrollHour(hour)}
+						containerStyle={timePickerStyle.itemContainer}
+						itemTextStyle={timePickerStyle.text}
+						visibleRest={1}
+						itemHeight={60}
+						decelerationRate={"normal"}
+						itemStyle={timePickerStyle.item}
+					/>
+
+					<WheelPicker 
+						options={MINUTES}
+						selectedIndex={currSchedule.date.getMinutes()}
+						onChange={(minute) => scrollMinute(minute)}
+						containerStyle={timePickerStyle.itemContainer}
+						itemTextStyle={timePickerStyle.text}
+						visibleRest={1}
+						itemHeight={60}
+						decelerationRate={"normal"}
+						itemStyle={timePickerStyle.item}
+					/>
 				</View>
-
-				<TimeScrollPicker 
-					limit={62.5}
-					defaultOffsetHour={24}
-				/>
-
-				<DateTimePickerModal
-					is24Hour={true}
-					isDarkModeEnabled={true}
-					isVisible={timeModalVisible}
-					mode="time"
-					onConfirm={(date) => handleTimeConfirmation(date)}
-					onCancel={hideTimePicker}
-					timePickerModeAndroid="clock"
-				/>
 				
-
-				<View style={bottomArrowIconViewStyle.container}>
-					<TouchableOpacity>
-						<BottomArrowIcon />
-					</TouchableOpacity>
-					<TouchableOpacity>
-						<BottomArrowIcon />
-					</TouchableOpacity>
-				</View> */}
-
+				
 				<View style={calendarViewStyle.container}>
 					<View style={daySelectionViewStyle.container}>
 						<Text style={dayTextStyle.container}>
-							Friday, October 27
+							{WEEKDAYS[currSchedule.date.getDay()]}, {MONTHS[currSchedule.date.getMonth()]} {currSchedule.date.getDate()}
 						</Text>
 						<DateTimePickerModal
 							mode="date"
@@ -184,26 +170,10 @@ const EditScheduleScreen = ({navigation}) => {
 
 						<TouchableOpacity
 							onPress={pressCalendarIcon}
+							style={calendarIconStyle.container}
 						>
 							<CalendarIcon/>
 						</TouchableOpacity>
-					</View>
-
-					<View style={weekDayViewStyle.container}>
-						{weekDays.map((day, index) => (
-							<TouchableOpacity
-								key={index}
-								style={selectedWeekDays[index] ? weekDayStyle.selectedContainer : weekDayStyle.unSelectedContainer}
-								onPress={() => pressWeekDayButton(index)}
-							>
-								<Text
-									style={weekDayStyle.text}
-								>
-									{day}
-							</Text>
-							</TouchableOpacity>
-							
-						))}
 					</View>
 				</View>
 
@@ -223,9 +193,13 @@ const EditScheduleScreen = ({navigation}) => {
 							style={smartFanLevelChangeSliderStyle.container}
 							minimumValue={0}
 							maximumValue={100}
-							interval={20}
+							step={20}
 							thumbTintColor={"#006A64"}
+							value={currSchedule.fanSpeed}
+							maximumTrackTintColor={"#ADD8E6"}
+							onValueChange={(value) => changeFanSpeedValue(value)}
 						/>
+						<Text style={smartFanLevelChangeTextStyle.container}>{currSchedule.fanSpeed}</Text>
 					</LinearGradient>
 
 					<LinearGradient 
@@ -289,34 +263,36 @@ const EditScheduleScreen = ({navigation}) => {
 				</View>
 				<View style={buttonsViewStyle.container}>
 					<LinearGradient
-							colors={["rgba(98, 210, 141, 0.88)", "rgba(234, 245, 45, 0.79)"]}
-							start={{x: 0, y: 0}}
-							locations={[0.112, 0.88]}
-							
-							end={{x: 1, y: 0}}
-							style={cancelButtonStyle.linearGradient}
+						colors={["rgb(63, 76, 119)","rgb(32, 38, 57)"]}
+						locations={[0.114, 0.702]}
+						start={{x: 0, y: 0}}
+						end={{x: 1, y: 0}}
+						style={cancelButtonStyle.linearGradient}
 					>
-						<TouchableOpacity style={cancelButtonStyle.container}>
+						<TouchableOpacity 
+							style={cancelButtonStyle.container}
+							onPress={(e) => pressCancelButton()}
+						>
 							<Text style={cancelButtonStyle.text}>Cancel</Text>
 						</TouchableOpacity>
 					</LinearGradient>
 					
 					<LinearGradient
-						colors={["rgba(98, 210, 141, 0.88)", "rgba(234, 245, 45, 0.79)"]}
+						colors={["rgb(63, 76, 119)","rgb(32, 38, 57)"]}
+						locations={[0.114, 0.702]}
 						start={{x: 0, y: 0}}
-						locations={[0.112, 0.88]}
 						end={{x: 1, y: 0}}
 						style={saveButtonStyle.linearGradient}
 					>
 						<TouchableOpacity 
 							style={saveButtonStyle.container}
+							onPress={(e) => pressSaveButton(currSchedule, created)}
 						>
 							<Text style={saveButtonStyle.text}>Save</Text>
 						</TouchableOpacity>
 					</LinearGradient>
 				</View>
 			</LinearGradient> 
-			<MenuBar onPressIcon={navigateToScreen}/>
 		</View>
 	);
 };
@@ -327,7 +303,6 @@ const editScheduleScreenViewStyle = StyleSheet.create({
 		flexDirection: "column",
 		width: "100%",
 		height: "100%",
-		fontFamily: "Karla-Regular"
 	},
 	calendarVisible: {
 		backgroundColor: "rgba(0, 0, 0, 0.5)"
@@ -338,7 +313,7 @@ const editScheduleViewStyle = StyleSheet.create({
 	container: {
 		borderBottomLeftRadius: 20,
 		borderBottomRightRadius: 20,
-		height: "93%",
+		height: "100%",
 		width: "100%",
 	}
 });
@@ -363,12 +338,25 @@ const bottomArrowIconViewStyle = StyleSheet.create({
 });
 
 
-const timeViewStyle = StyleSheet.create({
-	container: {
-		fontSize: 69,
-		textAlign: "center",
-		color: "#121212",
+const timePickerStyle = StyleSheet.create({
+	text: {
+		color: "#FFFFFF",
+		fontSize: 40
 	},
+	itemContainer: {
+		width: "25%",
+	},
+	container: {
+		display: "flex",
+		flexDirection: "row",
+		justifyContent: "center",
+		marginTop: "10%"
+	},
+	item: {
+		borderWidth: 1,
+		backgroundColor: "rgb(32, 38, 57)"	
+	}
+
 });
 
 const calendarViewStyle = StyleSheet.create({
@@ -379,6 +367,7 @@ const calendarViewStyle = StyleSheet.create({
 		marginLeft: "7.69%",
 		justifyContent: "center",
 		gap: 17,
+		position: "relative"
 	},
 });
 
@@ -397,42 +386,13 @@ const dayTextStyle = StyleSheet.create({
 	},
 });
 
-const weekDayViewStyle = StyleSheet.create({
+const calendarIconStyle = StyleSheet.create({
 	container: {
-		display: "flex",
-		flexDirection: "row",
-		gap: 12
+		position: "absolute",
+		right: 20,
 	},
 });
 
-const weekDayStyle = StyleSheet.create({
-	selectedContainer: {
-		borderWidth: 1,
-		borderColor: "#FFFFFF",
-		borderRadius: 50,
-		width: 40,
-		height: 40,
-		display: "flex",
-		alignItems: "center",
-		justifyContent: "center",
-		backgroundColor: "#4B0082"
-	},
-	unSelectedContainer: {
-		borderWidth: 1,
-		borderColor: "#FFFFFF",
-		borderRadius: 50,
-		width: 40,
-		height: 40,
-		display: "flex",
-		alignItems: "center",
-		justifyContent: "center",
-		backgroundColor: "#9370DB"
-	},
-	text: {
-		fontSize: 18,
-		color: "#FFFFFF",
-	}
-});
 
 const equipmentLevelChangeViewStyle = StyleSheet.create({
 	container: {
@@ -469,7 +429,7 @@ const smartFanLevelChangeTextStyle = StyleSheet.create({
 
 const smartFanLevelChangeSliderStyle = StyleSheet.create({
 	container: {
-		width: "48.86%",
+		width: "50%",
 		height: 200,
 	},
 });
@@ -550,7 +510,7 @@ const buttonsViewStyle = StyleSheet.create({
 		display: "flex",
 		flexDirection: "row",
 		gap: 33,
-		marginTop: "10%",
+		marginTop: "20%",
 		marginLeft: "30%",
 	},
 });
@@ -567,7 +527,7 @@ const cancelButtonStyle = StyleSheet.create({
 	},
 	text: {
 		fontSize: 20,
-		color: "#000000",
+		color: "#FFFFFF",
 	},
 	linearGradient: {
 		borderRadius: 10
@@ -586,7 +546,7 @@ const saveButtonStyle = StyleSheet.create({
 	},
 	text: {
 		fontSize: 20,
-		color: "#000000",
+		color: "#FFFFFF",
 	},
 	linearGradient: {
 		borderRadius: 10
@@ -617,7 +577,6 @@ const calendarPickerStyle = StyleSheet.create({
 	closeButtonText: {
 		fontSize: 20,
 		color: "#E5E5E5",
-
 	},
 	header: {
 		fontStyle: "italic"
