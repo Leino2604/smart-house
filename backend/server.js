@@ -35,7 +35,7 @@ app.get("/schedules/:id", async (req, res) => {
 
 // Create a new schedule
 app.post("/schedules", async (req, res) => {
-  const newSchedule = new Schedule(req.body);
+	const newSchedule = new Schedule(req.body);
 	try {
 		await newSchedule.save();
 		res.status(201).json(newSchedule);
