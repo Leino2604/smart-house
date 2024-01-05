@@ -15,6 +15,7 @@ const scheduleSchema = new mongoose.Schema({
 	},
 	repeat: {
 		type: [String],
+		required: true,
 		enum: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
 	},
 	fanDevice: {
@@ -38,7 +39,7 @@ const scheduleSchema = new mongoose.Schema({
 	},
 	notification: {
 		type: Boolean,
-		default: true,
+		required: true,
 	},
 });
 
