@@ -1,7 +1,7 @@
 import { Text, StyleSheet, View, ScrollView, Pressable } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import React, { useState, useEffect } from "react";
-import ThresholdModal from "../components/thresholdModal";
+import ThresholdModal from "./editThresholdScreen";
 import axios from "axios";
 
 const BACKEND_API = "https://smart-house-api.onrender.com";
@@ -11,7 +11,7 @@ export default function ThresholdScreen({ navigation }) {
     return (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
             <Text
-                onPress={() => navigation.navigate('Home')}
+                onPress={() => navigation.navigate('Edit Threshold')}
                 style={{ fontSize: 26, fontWeight: 'bold' }}>Threshold Screen</Text>
         </View>
     );

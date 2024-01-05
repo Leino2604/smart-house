@@ -1,6 +1,6 @@
 //Will send data to adafruit feed to trigger when a time occured
 const axios = require("axios");
-const aio_key = global.AdaFruitIOKey;
+let aio_key = global.AdaFruitIOKey;
 
 const BACKEND_API = "https://smart-house-api.onrender.com";
 let scheduleData = [];
@@ -12,6 +12,8 @@ const sendLightData = async (lightDevice, lightValue) => {
 		return;
 	}
 	try {
+		aio_key = global.AdaFruitIOKey;
+
 		const headers = {
 			"X-AIO-Key": aio_key,
 			"Content-Type": "application/json",
@@ -39,6 +41,8 @@ const sendFanData = async (fanDevice, fanValue) => {
 		return;
 	}
 	try {
+		aio_key = global.AdaFruitIOKey;
+
 		const headers = {
 			"X-AIO-Key": aio_key,
 			"Content-Type": "application/json",

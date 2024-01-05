@@ -10,6 +10,7 @@ import ScheduleScreen from "./screens/schedule";
 import StatisticScreen from "./screens/statisticScreen";
 import ThresholdScreen from "./screens/thresholdScreen";
 import EditScheduleScreen from "./screens/editSchedule";
+import EditThresholdScreen from "./screens/editThresholdScreen";
 
 // Screen names
 const homeName = "Home";
@@ -17,6 +18,7 @@ const scheduleName = "Schedule";
 const editScheduleName = "Edit schedule";
 const statisticName = "Statistic";
 const ThresholdName = "Threshold";
+const editThresholdName = "Edit Threshold"
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -28,10 +30,18 @@ const ScheduleStack = () => (
   </Stack.Navigator>
 );
 
+const ThresholdStack = () => (
+	<Stack.Navigator initialRouteName={ThresholdName}>
+	  <Stack.Screen name={ThresholdName} component={ThresholdScreen} />
+	  <Stack.Screen name={editThresholdName} component={EditThresholdScreen} />
+	</Stack.Navigator>
+  );
+
+
 export default function App() {
 	return (
 		<NavigationContainer>
-			<Tab.Navigator
+			<Tab.Navigator 
 				initialRouteName={homeName} //homeName
 				screenOptions={({ route }) => ({
 					tabBarIcon: ({ focused, color, size }) => {
@@ -41,7 +51,7 @@ export default function App() {
 						if (rn === homeName) {
 							iconName = focused ? "home" : "home-outline";
 						} else if (rn === scheduleName) {
-							iconName = focused ? "list" : "list-outline";
+							iconName = focused ? "alarm" : "alarm-outline";
 						} else if (rn === statisticName) {
 							iconName = focused ? "stats-chart" : "stats-chart-outline";
 						} else if (rn === ThresholdName) {
@@ -55,12 +65,13 @@ export default function App() {
 					inactiveTintColor: "grey",
 					labelStyle: { paddingBottom: 10, fontSize: 10 },
 					style: { padding: 10, height: 70 },
+					headerShown: false
 				})}
 			>
-				<Tab.Screen name={homeName} component={HomeScreen} />
+				<Tab.Screen name={homeName} component={HomeScreen}/>
 				<Tab.Screen name={scheduleName} component={ScheduleStack} />
 				<Tab.Screen name={statisticName} component={StatisticScreen} />
-				<Tab.Screen name={ThresholdName} component={ThresholdScreen} />
+				<Tab.Screen name={ThresholdName} component={ThresholdStack} />
 			</Tab.Navigator>
 		</NavigationContainer>
 	);

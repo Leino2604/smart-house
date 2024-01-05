@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import MenuBar from "../components/menu";
-import { ScrollView, StatusBar, View, StyleSheet, Text } from "react-native";
+import { ScrollView, StatusBar, View, StyleSheet, Text, TouchableOpacity } from "react-native";
 import axios from "axios";
 import { LinearGradient } from "expo-linear-gradient";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import "../global";
 
 import UserIcon from "../components/userIcon";
@@ -11,6 +12,8 @@ import ToggleSwitch from "../components/ToggleSwitch";
 import LightBulbIcon from "../components/lightBulbIcon";
 import ThermometerIcon from "../components/thermometerIcon";
 import HumiditymeterIcon from "../components/humiditymeterIcon";
+import AdafruitIOModal from "../components/AdafruitIOModal";
+
 import * as SplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
 
@@ -21,46 +24,71 @@ const HomeScreen = ({ navigation }) => {
 	const [temp, setTemp] = useState(0.0);
 	const [humidity, setHumidity] = useState(0.0);
 
-	const AdaFruitIOKey = global.AdaFruitIOKey;
-	console.log(AdaFruitIOKey);
+	// const [adafruitIOKey, setAdafruitIOKeyState] = useState("aio_izxf20WAfwu9k1oYGMsVL4RGwXGH");
+	const [adafruitIOModalVisible, setAdafruitIOModalVisible] = useState(false);
 
-	// Function to fetch data from the API
+	// const getAdafruitIOKey = async () => {
+	// 	try {
+	// 		const storedAdafruitIOKey = await AsyncStorage.getItem("adafruitIOKey");
+	// 		return storedAdafruitIOKey || "";
+	// 	} catch (error) {
+	// 		console.error("Error retrieving adafruitIOKey from AsyncStorage:", error);
+	// 		return "";
+	// 	}
+	// };
+
 	const fetchData = async (url, setDataFunction) => {
+		let adafruitIOKey = global.AdaFruitIOKey;
+		// console.log('Fetch data with key: ',adafruitIOKey);
 		try {
 			const headers = {
-				"X-AIO-Key": AdaFruitIOKey,
+				"X-AIO-Key": adafruitIOKey,
 				"Content-Type": "application/json",
 			};
 
 			const response = await axios.get(url, { headers });
 			setDataFunction(response.data.value);
-
 			console.log(response.data.value);
 		} catch (error) {
-			console.error("Error fetching data:", error);
+			console.error("Error fetching device & sensor data:", error);
 		}
 	};
 
+	// useEffect(() => {
+	// 	// Fetch Adafruit IO Key
+	// 	const storedAdafruitIOKey = getAdafruitIOKey();
+	// 	setAdafruitIOKeyState(storedAdafruitIOKey);
+	// }, [adafruitIOModalVisible])
+
 	useEffect(() => {
-		// Fetch data initially
-		fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.fan-speed/data/last", setFanEnabled);
-		fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.light-switch/data/last", setLightEnabled);
-		fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.temp/data/last", setTemp);
-		fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.humid/data/last", setHumidity);
+		const fetchAllData = async () => {
+			try {
+				// Fetch data initially
+				await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.fan-speed/data/last", setFanEnabled);
+				await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.light-switch/data/last", setLightEnabled);
+				await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.temp/data/last", setTemp);
+				await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.humid/data/last", setHumidity);
 
-		// Set up interval to fetch data every 3 seconds
-		const interval = setInterval(() => {
-			console.log("----------------------------------");
-			fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.fan-speed/data/last", setFanEnabled);
-			fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.light-switch/data/last", setLightEnabled);
-			fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.temp/data/last", setTemp);
-			fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.humid/data/last", setHumidity);
+				// Set up interval to fetch data every 3 seconds
+				const interval = setInterval(async () => {
+					console.log("----------------------------------");
+					await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.fan-speed/data/last", setFanEnabled);
+					await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.light-switch/data/last", setLightEnabled);
+					await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.temp/data/last", setTemp);
+					await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.humid/data/last", setHumidity);
 
-			console.log(fanEnabled, lightEnabled, temp, humidity)
-		}, 3000);
+					console.log(fanEnabled, lightEnabled, temp, humidity);
+				}, 3000);
 
-		// Clean up interval on component unmount
-		return () => clearInterval(interval);
+				// Clean up interval on component unmount
+				return () => clearInterval(interval);
+			} catch (error) {
+				console.error("Error in fetchAllData:", error);
+			}
+		};
+
+		// Call the function that fetches all data
+		fetchAllData();
 	}, []);
 
 	/* Used to load new fonts */
@@ -80,7 +108,6 @@ const HomeScreen = ({ navigation }) => {
 	// 	}
 	// 	loadFonts();
 	// }, [])
-	
 
 	function handleFanEnabledToggleSwitch() {
 		setFanEnabled((currState) => !currState);
@@ -101,9 +128,9 @@ const HomeScreen = ({ navigation }) => {
 				<StatusBar barStyle={"light-content"} />
 				<View style={userInfoStyle.container}>
 					<Text style={userInfoStyle.greetingMsg}>Hi {user.name}</Text>
-					<View style={userInfoStyle.icon}>
+					<TouchableOpacity style={userInfoStyle.icon} onPress={() => setAdafruitIOModalVisible(!adafruitIOModalVisible)}>
 						<UserIcon />
-					</View>
+					</TouchableOpacity>
 				</View>
 				<View style={equipmentInfoStyle.container}>
 					<ScrollView>
@@ -188,11 +215,26 @@ const HomeScreen = ({ navigation }) => {
 						</View>
 					</ScrollView>
 				</View>
+				{adafruitIOModalVisible && (
+					<View style={styles.modalContainer}>
+						<AdafruitIOModal onClose={() => setAdafruitIOModalVisible(!adafruitIOModalVisible)} isVisible={adafruitIOModalVisible} />
+					</View>
+				)}
 			</LinearGradient>
-			{/* <MenuBar onPressIcon={navigateToScreen} /> */}
 		</View>
 	);
 };
+
+const styles = StyleSheet.create({
+	modalContainer: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+		marginTop: 200,
+		backgroundColor: "rgba(0,0,0,0.5)",
+		zIndex: 2,
+	},
+});
 
 const homeScreenStyle = StyleSheet.create({
 	container: {
