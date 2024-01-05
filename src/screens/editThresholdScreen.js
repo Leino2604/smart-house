@@ -1,20 +1,197 @@
-import { Text, StyleSheet, View, ScrollView, Pressable } from "react-native";
+import { Text, StyleSheet, View, ScrollView, Pressable, TextInput, Switch, ToastAndroid } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import React, { useState, useEffect } from "react";
 import ThresholdModal from "./editThresholdScreen";
 import axios from "axios";
+import Slider from "@react-native-community/slider";
 
 const BACKEND_API = "https://smart-house-api.onrender.com";
 
+export default function EditThresholdScreen({ navigation, route }) {
+	const { threshold } = route.params; // Lấy threshold từ params nếu có
 
-export default function EditThresholdScreen({ navigation }) {
-    return (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <Text
-                onPress={() => navigation.navigate('Threshold')}
-                style={{ fontSize: 26, fontWeight: 'bold' }}>Edit Threshold Screen</Text>
-        </View>
-    );
+	// State variables for the inputs and switches
+	const [temp, setTemp] = useState(threshold ? threshold.temp.$numberDecimal : 0); // Nếu có threshold thì lấy giá trị từ đó, nếu không thì mặc định là 0
+	const [humid, setHumid] = useState(threshold ? threshold.humid.$numberDecimal : 0);
+	const [distance, setDistance] = useState(threshold ? threshold.distance : 0);
+	const [lightStatusWhenReached, setLightStatusWhenReached] = useState(threshold ? threshold.lightStatusWhenReached : false);
+	const [lightStatusOriginal, setLightStatusOriginal] = useState(threshold ? threshold.lightStatusOriginal : false);
+	const [fanSpeedWhenReached, setFanSpeedWhenReached] = useState(threshold ? threshold.fanSpeedWhenReached : 0);
+	const [fanSpeedOriginal, setFanSpeedOriginal] = useState(threshold ? threshold.fanSpeedOriginal : 0);
+	const [presented, setPresented] = useState(threshold ? threshold.presented : true);
+	const addFlag = threshold.addFlag;
+
+	// Handlers for the inputs and switches
+	const handleTempChange = (value) => {
+		setTemp(value);
+	};
+
+	const handleHumidChange = (value) => {
+		setHumid(value);
+	};
+
+	const handleDistanceChange = (value) => {
+		setDistance(value);
+	};
+
+	const handleLightStatusWhenReachedChange = (value) => {
+		setLightStatusWhenReached(value);
+	};
+
+	const handleLightStatusOriginalChange = (value) => {
+		setLightStatusOriginal(value);
+	};
+
+	const handleFanSpeedWhenReachedChange = (value) => {
+		setFanSpeedWhenReached(value);
+	};
+
+	const handleFanSpeedOriginalChange = (value) => {
+		setFanSpeedOriginal(value);
+	};
+
+	const handlePresentedChange = (value) => {
+		setPresented(value);
+	};
+
+	const handleSave = async () => {
+		// Tạo một đối tượng threshold mới với các giá trị từ state
+		const newThreshold = {
+			fanDevice: "fan-speed",
+			lightDevice: "light-switch",
+			tempSensor: "temp",
+			humidSensor: "humid",
+			distanceSensor: "distance",
+			pirSensor: "pir",
+			temp: { $numberDecimal: temp },
+			humid: { $numberDecimal: humid },
+			distance,
+			presented,
+			active: true,
+			currentState: false,
+			lightStatusWhenReached,
+			lightStatusOriginal,
+			fanSpeedWhenReached,
+			fanSpeedOriginal,
+		};
+		try {
+			// Nếu AddFlag là true thì gọi API để thêm mới, nếu không thì gọi API để cập nhật
+			if (addFlag == true) {
+				await axios.post(`${BACKEND_API}/thresholds`, newThreshold);
+				ToastAndroid.show("Threshold added successfully", ToastAndroid.SHORT);
+			} else {
+				await axios.put(`${BACKEND_API}/thresholds/${threshold._id}`, newThreshold);
+				ToastAndroid.show("Threshold updated successfully", ToastAndroid.SHORT);
+			}
+			// Quay lại màn hình Threshold
+			navigation.navigate("Threshold");
+		} catch (error) {
+			// Hiển thị thông báo lỗi
+			ToastAndroid.show("Error saving threshold", ToastAndroid.SHORT);
+			console.error("Error saving threshold:", error);
+		}
+	};
+
+	// Styles for the inputs and switches
+	const inputStyle = {
+		width: 100,
+		height: 40,
+		borderColor: "#006A64",
+		borderWidth: 1,
+		borderRadius: 5,
+		margin: 10,
+		padding: 5,
+		textAlign: "center",
+	};
+
+	const switchStyle = {
+		transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],
+		margin: 10,
+	};
+
+	const sliderStyle = {
+		width: 200,
+		height: 40,
+		margin: 10,
+	};
+
+	const saveButtonStyle = {
+		width: 100,
+		height: 40,
+		backgroundColor: "#006A64",
+		borderRadius: 5,
+		margin: 10,
+		padding: 5,
+		alignItems: "center",
+		justifyContent: "center",
+		alignSelf: "flex-end",
+	};
+
+	const saveButtonTextStyle = {
+		color: "white",
+		fontSize: 16,
+		fontWeight: "bold",
+	};
+
+	return (
+		<View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+			<ScrollView>
+				<View style={{ flexDirection: "row", alignItems: "center" }}>
+					<Text>Temp: </Text>
+					<TextInput style={inputStyle} keyboardType="numeric" value={temp.toString()} onChangeText={handleTempChange} />
+				</View>
+				<View style={{ flexDirection: "row", alignItems: "center" }}>
+					<Text>Humid: </Text>
+					<TextInput style={inputStyle} keyboardType="numeric" value={humid.toString()} onChangeText={handleHumidChange} />
+				</View>
+				<View style={{ flexDirection: "row", alignItems: "center" }}>
+					<Text>Distance: </Text>
+					<TextInput style={inputStyle} keyboardType="numeric" value={distance.toString()} onChangeText={handleDistanceChange} />
+				</View>
+				<View style={{ flexDirection: "row", alignItems: "center" }}>
+					<Text>Presented: </Text>
+					<Switch style={switchStyle} value={presented} onValueChange={handlePresentedChange} />
+				</View>
+				<View style={{ flexDirection: "row", alignItems: "center" }}>
+					<Text>Light Status When Triggered: </Text>
+					<Switch style={switchStyle} value={lightStatusWhenReached} onValueChange={handleLightStatusWhenReachedChange} />
+				</View>
+				<View style={{ flexDirection: "row", alignItems: "center" }}>
+					<Text>Light Status Original: </Text>
+					<Switch style={switchStyle} value={lightStatusOriginal} onValueChange={handleLightStatusOriginalChange} />
+				</View>
+				<View style={{ flexDirection: "row", alignItems: "center" }}>
+					<Text>Fan Status When Triggered: </Text>
+					<Slider
+						style={sliderStyle}
+						minimumValue={0}
+						maximumValue={100}
+						step={20}
+						thumbTintColor={"#006A64"}
+						value={fanSpeedWhenReached}
+						maximumTrackTintColor={"#ADD8E6"}
+						onValueChange={handleFanSpeedWhenReachedChange}
+					/>
+				</View>
+				<View style={{ flexDirection: "row", alignItems: "center" }}>
+					<Text>Fan Status Original: </Text>
+					<Slider
+						style={sliderStyle}
+						minimumValue={0}
+						maximumValue={100}
+						step={20}
+						thumbTintColor={"#006A64"}
+						value={fanSpeedOriginal}
+						maximumTrackTintColor={"#ADD8E6"}
+						onValueChange={handleFanSpeedOriginalChange}
+					/>
+				</View>
+				<Pressable style={saveButtonStyle} onPress={handleSave}>
+					<Text style={saveButtonTextStyle}>Save</Text>
+				</Pressable>
+			</ScrollView>
+		</View>
+	);
 }
 
 // const ThresholdModal = () => {
@@ -51,8 +228,6 @@ export default function EditThresholdScreen({ navigation }) {
 // 			distance: 0,
 // 		});
 // 	};
-
-	
 
 // 	return (
 // 		<Modal

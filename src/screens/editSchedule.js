@@ -1,39 +1,88 @@
 import React, { useState, useRef, useEffect } from "react";
-import {
-	View,
-	StyleSheet,
-	Text,
-	TouchableOpacity,
-	StatusBar,
-} from "react-native";
-import {LinearGradient} from "expo-linear-gradient";
+import { View, StyleSheet, Text, TouchableOpacity, StatusBar } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import Slider from "@react-native-community/slider";
 import ToggleSwitch from "../components/ToggleSwitch";
-import {useFonts} from "expo-font";
+import { useFonts } from "expo-font";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import WheelPicker from "react-native-wheely";
-
 
 import FanIcon from "../components/fanIcon";
 import LightBulbIcon from "../components/lightBulbIcon";
 import CalendarIcon from "../components/calendarIcon";
 import axios from "axios";
+import { ScrollView } from "react-native-gesture-handler";
 
 const BACKEND_API = "https://smart-house-api.onrender.com";
 const HOURS = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"];
 const MINUTES = [
-	"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11",
-	"12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23",
-	"24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35",
-	"36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47",
-	"48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59"
+	"00",
+	"01",
+	"02",
+	"03",
+	"04",
+	"05",
+	"06",
+	"07",
+	"08",
+	"09",
+	"10",
+	"11",
+	"12",
+	"13",
+	"14",
+	"15",
+	"16",
+	"17",
+	"18",
+	"19",
+	"20",
+	"21",
+	"22",
+	"23",
+	"24",
+	"25",
+	"26",
+	"27",
+	"28",
+	"29",
+	"30",
+	"31",
+	"32",
+	"33",
+	"34",
+	"35",
+	"36",
+	"37",
+	"38",
+	"39",
+	"40",
+	"41",
+	"42",
+	"43",
+	"44",
+	"45",
+	"46",
+	"47",
+	"48",
+	"49",
+	"50",
+	"51",
+	"52",
+	"53",
+	"54",
+	"55",
+	"56",
+	"57",
+	"58",
+	"59",
 ];
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-const EditScheduleScreen = ({navigation, route}) => {
-	const {onSave, year, month, day, hour, minute, lightDevice, fanDevice, lightStatus, fanSpeed, notification, id} = route.params
-	
+const EditScheduleScreen = ({ navigation, route }) => {
+	const { onSave, year, month, day, hour, minute, lightDevice, fanDevice, lightStatus, fanSpeed, notification, id } = route.params;
+
 	const [currSchedule, setCurrSchedule] = useState({
 		hour: hour,
 		minute: minute,
@@ -42,14 +91,14 @@ const EditScheduleScreen = ({navigation, route}) => {
 		fanDevice: fanDevice,
 		lightDevice: lightDevice,
 		lightStatus: lightStatus,
-		fanSpeed: fanSpeed
+		fanSpeed: fanSpeed,
 	});
 	const [calendarVisible, setCalendarVisible] = useState(false);
-	
+
 	function toggleSmartLightSwitch() {
 		const newSchedule = {
 			...currSchedule,
-			lightStatus: !currSchedule.lightStatus
+			lightStatus: !currSchedule.lightStatus,
 		};
 		setCurrSchedule(newSchedule);
 	}
@@ -57,7 +106,7 @@ const EditScheduleScreen = ({navigation, route}) => {
 	function toggleNotificationEnabledSwitch() {
 		const newSchedule = {
 			...currSchedule,
-			notification: !currSchedule.notification
+			notification: !currSchedule.notification,
 		};
 		setCurrSchedule(newSchedule);
 	}
@@ -69,7 +118,7 @@ const EditScheduleScreen = ({navigation, route}) => {
 	function handleDateConfirmation(datetime) {
 		const newSchedule = {
 			...currSchedule,
-			date: datetime
+			date: datetime,
 		};
 		setCurrSchedule(newSchedule);
 	}
@@ -81,7 +130,7 @@ const EditScheduleScreen = ({navigation, route}) => {
 	function scrollHour(hour) {
 		const newSchedule = {
 			...currSchedule,
-			hour: hour
+			hour: hour,
 		};
 		setCurrSchedule(newSchedule);
 	}
@@ -89,9 +138,9 @@ const EditScheduleScreen = ({navigation, route}) => {
 	function scrollMinute(minute) {
 		const newSchedule = {
 			...currSchedule,
-			minute: minute
+			minute: minute,
 		};
-		setCurrSchedule(newSchedule)
+		setCurrSchedule(newSchedule);
 	}
 
 	function pressCancelButton() {
@@ -101,7 +150,7 @@ const EditScheduleScreen = ({navigation, route}) => {
 	function changeFanSpeedValue(value) {
 		const newSchedule = {
 			...currSchedule,
-			fanSpeed: value
+			fanSpeed: value,
 		};
 		setCurrSchedule(newSchedule);
 	}
@@ -111,188 +160,152 @@ const EditScheduleScreen = ({navigation, route}) => {
 		navigation.navigate("Schedule", {});
 	}
 
-
 	return (
-		<View 
-			style={editScheduleScreenViewStyle.container}
-		>
-			<LinearGradient 
-				style={editScheduleViewStyle.container}
-				colors={["#004282", "#5899e2"]}
-			>
-				<StatusBar 
-					barStyle={"light-content"}
-				/>
+		<View style={editScheduleScreenViewStyle.container}>
+			<LinearGradient style={editScheduleViewStyle.container} colors={["#004282", "#5899e2"]}>
+				<ScrollView>
+					<StatusBar barStyle={"light-content"} />
 
-				<View
-					style={timePickerStyle.container}
-				>
-					<WheelPicker 
-						options={HOURS}
-						selectedIndex={currSchedule.hour}
-						onChange={(hour) => scrollHour(hour)}
-						containerStyle={timePickerStyle.itemContainer}
-						itemTextStyle={timePickerStyle.text}
-						visibleRest={1}
-						itemHeight={60}
-						decelerationRate={"normal"}
-						itemStyle={timePickerStyle.item}
-					/>
-
-					<WheelPicker 
-						options={MINUTES}
-						selectedIndex={currSchedule.minute}
-						onChange={(minute) => scrollMinute(minute)}
-						containerStyle={timePickerStyle.itemContainer}
-						itemTextStyle={timePickerStyle.text}
-						visibleRest={1}
-						itemHeight={60}
-						decelerationRate={"normal"}
-						itemStyle={timePickerStyle.item}
-					/>
-				</View>
-				
-				
-				<View style={calendarViewStyle.container}>
-					<View style={daySelectionViewStyle.container}>
-						<Text style={dayTextStyle.container}>
-							{WEEKDAYS[currSchedule.date.getDay()]}, {MONTHS[currSchedule.date.getMonth()]} {currSchedule.date.getDate()}
-						</Text>
-						<DateTimePickerModal
-							mode="date"
-							display="calendar"
-							is24Hour={true}
-							isDarkModeEnabled={true}
-							isVisible={calendarVisible}
-							onConfirm={(datetime) => handleDateConfirmation(datetime)}
-							onCancel={hideCalendarPicker}
+					<View style={timePickerStyle.container}>
+						<WheelPicker
+							options={HOURS}
+							selectedIndex={currSchedule.hour}
+							onChange={(hour) => scrollHour(hour)}
+							containerStyle={timePickerStyle.itemContainer}
+							itemTextStyle={timePickerStyle.text}
+							visibleRest={1}
+							itemHeight={60}
+							decelerationRate={"normal"}
+							itemStyle={timePickerStyle.item}
 						/>
 
-						<TouchableOpacity
-							onPress={pressCalendarIcon}
-							style={calendarIconStyle.container}
-						>
-							<CalendarIcon/>
-						</TouchableOpacity>
+						<WheelPicker
+							options={MINUTES}
+							selectedIndex={currSchedule.minute}
+							onChange={(minute) => scrollMinute(minute)}
+							containerStyle={timePickerStyle.itemContainer}
+							itemTextStyle={timePickerStyle.text}
+							visibleRest={1}
+							itemHeight={60}
+							decelerationRate={"normal"}
+							itemStyle={timePickerStyle.item}
+						/>
 					</View>
-				</View>
 
-				<View style={equipmentLevelChangeViewStyle.container}>
-					<LinearGradient 
-						style={smartFanLevelChangeViewStyle.container}
-						colors={["rgb(63, 76, 119)","rgb(32, 38, 57)"]}
-						locations={[0.114, 0.702]}
-						start={{x: 0, y: 0}}
-						end={{x: 1, y: 0}}
-					>
-						<FanIcon />
-						<Text style={smartFanLevelChangeTextStyle.container}>
-							Smart fan
-						</Text>
-						<Slider
-							style={smartFanLevelChangeSliderStyle.container}
-							minimumValue={0}
-							maximumValue={100}
-							step={20}
-							thumbTintColor={"#006A64"}
-							value={currSchedule.fanSpeed}
-							maximumTrackTintColor={"#ADD8E6"}
-							onValueChange={(value) => changeFanSpeedValue(value)}
-						/>
-						<Text style={smartFanLevelChangeTextStyle.container}>{currSchedule.fanSpeed}</Text>
-					</LinearGradient>
+					<View style={calendarViewStyle.container}>
+						<View style={daySelectionViewStyle.container}>
+							<Text style={dayTextStyle.container}>
+								{WEEKDAYS[currSchedule.date.getDay()]}, {MONTHS[currSchedule.date.getMonth()]} {currSchedule.date.getDate()}
+							</Text>
+							<DateTimePickerModal
+								mode="date"
+								display="calendar"
+								is24Hour={true}
+								isDarkModeEnabled={true}
+								isVisible={calendarVisible}
+								onConfirm={(datetime) => handleDateConfirmation(datetime)}
+								onCancel={hideCalendarPicker}
+							/>
 
-					<LinearGradient 
-						style={smartLightChangeViewStyle.container}
-						colors={["rgb(63, 76, 119)","rgb(32, 38, 57)"]}
-						locations={[0.114, 0.702]}
-						start={{x: 0, y: 0}}
-						end={{x: 1, y: 0}}
-					>
-						<LightBulbIcon />
-						<Text style={smartLightChangeTextStyle.container}>
-							Smart light
-						</Text>
+							<TouchableOpacity onPress={pressCalendarIcon} style={calendarIconStyle.container}>
+								<CalendarIcon />
+							</TouchableOpacity>
+						</View>
+					</View>
+
+					<View style={equipmentLevelChangeViewStyle.container}>
+						<LinearGradient
+							style={smartFanLevelChangeViewStyle.container}
+							colors={["rgb(63, 76, 119)", "rgb(32, 38, 57)"]}
+							locations={[0.114, 0.702]}
+							start={{ x: 0, y: 0 }}
+							end={{ x: 1, y: 0 }}
+						>
+							<FanIcon />
+							<Text style={smartFanLevelChangeTextStyle.container}>Smart fan</Text>
+							<Slider
+								style={smartFanLevelChangeSliderStyle.container}
+								minimumValue={0}
+								maximumValue={100}
+								step={20}
+								thumbTintColor={"#006A64"}
+								value={currSchedule.fanSpeed}
+								maximumTrackTintColor={"#ADD8E6"}
+								onValueChange={(value) => changeFanSpeedValue(value)}
+							/>
+							<Text style={smartFanLevelChangeTextStyle.container}>{currSchedule.fanSpeed}</Text>
+						</LinearGradient>
+
+						<LinearGradient
+							style={smartLightChangeViewStyle.container}
+							colors={["rgb(63, 76, 119)", "rgb(32, 38, 57)"]}
+							locations={[0.114, 0.702]}
+							start={{ x: 0, y: 0 }}
+							end={{ x: 1, y: 0 }}
+						>
+							<LightBulbIcon />
+							<Text style={smartLightChangeTextStyle.container}>Smart light</Text>
+							<ToggleSwitch
+								value={currSchedule.lightStatus}
+								onValueChange={toggleSmartLightSwitch}
+								backgroundActive={"#90EE90"}
+								backgroundInactive={"#FFFFFF"}
+								circleBorderActiveColor={"#000000"}
+								circleBorderInactiveColor={"#000000"}
+								containerStyle={smartLightChangeToggleSwitchStyle.container}
+								activeTextStyle={smartLightChangeToggleSwitchStyle.activeText}
+								inactiveTextStyle={smartLightChangeToggleSwitchStyle.inActiveText}
+								switchWidth={25}
+								switchHeight={25}
+								activeText={"On"}
+								inActiveText={"Off"}
+							/>
+						</LinearGradient>
+					</View>
+
+					<View style={notificationChangeView.container}>
+						<Text style={notificationChangeText.container}>Notification</Text>
 						<ToggleSwitch
-							value={currSchedule.lightStatus}
-							onValueChange={toggleSmartLightSwitch}
+							containerStyle={notificationChangeToggleSwitch.container}
+							value={currSchedule.notification}
+							onValueChange={toggleNotificationEnabledSwitch}
+							switchWidth={35}
+							switchHeight={30}
+							activeTextStyle={notificationChangeToggleSwitch.activeText}
+							inactiveTextStyle={notificationChangeToggleSwitch.inActiveText}
 							backgroundActive={"#90EE90"}
 							backgroundInactive={"#FFFFFF"}
 							circleBorderActiveColor={"#000000"}
 							circleBorderInactiveColor={"#000000"}
-							containerStyle={
-								smartLightChangeToggleSwitchStyle.container
-							}
-							activeTextStyle={
-								smartLightChangeToggleSwitchStyle.activeText
-							}
-							inactiveTextStyle={
-								smartLightChangeToggleSwitchStyle.inActiveText
-							}
-							switchWidth={25}
-							switchHeight={25}
-							activeText={"On"}
-							inActiveText={"Off"}
 						/>
-					</LinearGradient>
-				</View>
+					</View>
+					<View style={buttonsViewStyle.container}>
+						<LinearGradient
+							colors={["rgb(63, 76, 119)", "rgb(32, 38, 57)"]}
+							locations={[0.114, 0.702]}
+							start={{ x: 0, y: 0 }}
+							end={{ x: 1, y: 0 }}
+							style={cancelButtonStyle.linearGradient}
+						>
+							<TouchableOpacity style={cancelButtonStyle.container} onPress={(e) => pressCancelButton()}>
+								<Text style={cancelButtonStyle.text}>Cancel</Text>
+							</TouchableOpacity>
+						</LinearGradient>
 
-				<View style={notificationChangeView.container}>
-					<Text style={notificationChangeText.container}>
-						Notification
-					</Text>
-					<ToggleSwitch
-						containerStyle={
-							notificationChangeToggleSwitch.container
-						}
-						value={currSchedule.notification}
-						onValueChange={toggleNotificationEnabledSwitch}
-						switchWidth={35}
-						switchHeight={30}
-						activeTextStyle={
-							notificationChangeToggleSwitch.activeText
-						}
-						inactiveTextStyle={
-							notificationChangeToggleSwitch.inActiveText
-						}
-						backgroundActive={"#90EE90"}
-						backgroundInactive={"#FFFFFF"}
-						circleBorderActiveColor={"#000000"}
-						circleBorderInactiveColor={"#000000"}
-					/>
-				</View>
-				<View style={buttonsViewStyle.container}>
-					<LinearGradient
-						colors={["rgb(63, 76, 119)","rgb(32, 38, 57)"]}
-						locations={[0.114, 0.702]}
-						start={{x: 0, y: 0}}
-						end={{x: 1, y: 0}}
-						style={cancelButtonStyle.linearGradient}
-					>
-						<TouchableOpacity 
-							style={cancelButtonStyle.container}
-							onPress={(e) => pressCancelButton()}
+						<LinearGradient
+							colors={["rgb(63, 76, 119)", "rgb(32, 38, 57)"]}
+							locations={[0.114, 0.702]}
+							start={{ x: 0, y: 0 }}
+							end={{ x: 1, y: 0 }}
+							style={saveButtonStyle.linearGradient}
 						>
-							<Text style={cancelButtonStyle.text}>Cancel</Text>
-						</TouchableOpacity>
-					</LinearGradient>
-					
-					<LinearGradient
-						colors={["rgb(63, 76, 119)","rgb(32, 38, 57)"]}
-						locations={[0.114, 0.702]}
-						start={{x: 0, y: 0}}
-						end={{x: 1, y: 0}}
-						style={saveButtonStyle.linearGradient}
-					>
-						<TouchableOpacity 
-							style={saveButtonStyle.container}
-							onPress={(e) => pressSaveButton(currSchedule, id)}
-						>
-							<Text style={saveButtonStyle.text}>Save</Text>
-						</TouchableOpacity>
-					</LinearGradient>
-				</View>
-			</LinearGradient> 
+							<TouchableOpacity style={saveButtonStyle.container} onPress={(e) => pressSaveButton(currSchedule, id)}>
+								<Text style={saveButtonStyle.text}>Save</Text>
+							</TouchableOpacity>
+						</LinearGradient>
+					</View>
+				</ScrollView>
+			</LinearGradient>
 		</View>
 	);
 };
@@ -305,8 +318,8 @@ const editScheduleScreenViewStyle = StyleSheet.create({
 		height: "100%",
 	},
 	calendarVisible: {
-		backgroundColor: "rgba(0, 0, 0, 0.5)"
-	}
+		backgroundColor: "rgba(0, 0, 0, 0.5)",
+	},
 });
 
 const editScheduleViewStyle = StyleSheet.create({
@@ -315,7 +328,7 @@ const editScheduleViewStyle = StyleSheet.create({
 		borderBottomRightRadius: 20,
 		height: "100%",
 		width: "100%",
-	}
+	},
 });
 
 const topArrowIconViewStyle = StyleSheet.create({
@@ -337,11 +350,10 @@ const bottomArrowIconViewStyle = StyleSheet.create({
 	},
 });
 
-
 const timePickerStyle = StyleSheet.create({
 	text: {
 		color: "#FFFFFF",
-		fontSize: 40
+		fontSize: 40,
 	},
 	itemContainer: {
 		width: "25%",
@@ -350,13 +362,12 @@ const timePickerStyle = StyleSheet.create({
 		display: "flex",
 		flexDirection: "row",
 		justifyContent: "center",
-		marginTop: "10%"
+		marginTop: "10%",
 	},
 	item: {
 		borderWidth: 1,
-		backgroundColor: "rgb(32, 38, 57)"	
-	}
-
+		backgroundColor: "rgb(32, 38, 57)",
+	},
 });
 
 const calendarViewStyle = StyleSheet.create({
@@ -367,7 +378,7 @@ const calendarViewStyle = StyleSheet.create({
 		marginLeft: "7.69%",
 		justifyContent: "center",
 		gap: 17,
-		position: "relative"
+		position: "relative",
 	},
 });
 
@@ -392,7 +403,6 @@ const calendarIconStyle = StyleSheet.create({
 		right: 20,
 	},
 });
-
 
 const equipmentLevelChangeViewStyle = StyleSheet.create({
 	container: {
@@ -423,7 +433,7 @@ const smartFanLevelChangeViewStyle = StyleSheet.create({
 const smartFanLevelChangeTextStyle = StyleSheet.create({
 	container: {
 		fontSize: 16,
-		color: "#FFFFFF"
+		color: "#FFFFFF",
 	},
 });
 
@@ -451,7 +461,7 @@ const smartLightChangeViewStyle = StyleSheet.create({
 const smartLightChangeTextStyle = StyleSheet.create({
 	container: {
 		fontSize: 16,
-		color: "#FFFFFF"
+		color: "#FFFFFF",
 	},
 });
 
@@ -530,8 +540,8 @@ const cancelButtonStyle = StyleSheet.create({
 		color: "#FFFFFF",
 	},
 	linearGradient: {
-		borderRadius: 10
-	}
+		borderRadius: 10,
+	},
 });
 
 const saveButtonStyle = StyleSheet.create({
@@ -549,8 +559,8 @@ const saveButtonStyle = StyleSheet.create({
 		color: "#FFFFFF",
 	},
 	linearGradient: {
-		borderRadius: 10
-	}
+		borderRadius: 10,
+	},
 });
 
 const calendarPickerStyle = StyleSheet.create({
@@ -572,15 +582,14 @@ const calendarPickerStyle = StyleSheet.create({
 		borderRadius: 10,
 		borderWidth: 1,
 		borderColor: "#FFFFFF",
-
 	},
 	closeButtonText: {
 		fontSize: 20,
 		color: "#E5E5E5",
 	},
 	header: {
-		fontStyle: "italic"
-	}
+		fontStyle: "italic",
+	},
 });
 
 export default EditScheduleScreen;

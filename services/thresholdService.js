@@ -14,6 +14,7 @@ const fetchThresholdData = async () => {
 		const response = await axios.get(`${BACKEND_API}/thresholds`);
 		const thresholds = response.data;
 		data = thresholds;
+		console.log(data);
 		return thresholds;
 	} catch (error) {
 		handleError(error);
@@ -121,7 +122,7 @@ const sendFanData = async (fanDevice, fanValue) => {
 	}
 	try {
 		aio_key = global.AdaFruitIOKey;
-		
+
 		const headers = {
 			"X-AIO-Key": aio_key,
 			"Content-Type": "application/json",
