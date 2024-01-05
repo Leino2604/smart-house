@@ -1,6 +1,7 @@
 import * as React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createStackNavigator } from "@react-navigation/stack";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 // Screens
@@ -8,16 +9,24 @@ import HomeScreen from "./screens/home";
 import ScheduleScreen from "./screens/schedule";
 import StatisticScreen from "./screens/statisticScreen";
 import ThresholdScreen from "./screens/thresholdScreen";
-// import EditScheduleScreen from "./screens/editSchedule";
+import EditScheduleScreen from "./screens/editSchedule";
 
-//Screen names
+// Screen names
 const homeName = "Home";
 const scheduleName = "Schedule";
-const editScheduleName = "Edit Schedule";
+const editScheduleName = "Edit schedule";
 const statisticName = "Statistic";
 const ThresholdName = "Threshold";
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+
+const ScheduleStack = () => (
+  <Stack.Navigator initialRouteName={scheduleName}>
+    <Stack.Screen name={scheduleName} component={ScheduleScreen} />
+    <Stack.Screen name={editScheduleName} component={EditScheduleScreen} />
+  </Stack.Navigator>
+);
 
 export default function App() {
 	return (
@@ -49,8 +58,7 @@ export default function App() {
 				})}
 			>
 				<Tab.Screen name={homeName} component={HomeScreen} />
-				<Tab.Screen name={scheduleName} component={ScheduleScreen} />
-				{/* <Tab.Screen name={editScheduleName} component={EditScheduleScreen} /> */}
+				<Tab.Screen name={scheduleName} component={ScheduleStack} />
 				<Tab.Screen name={statisticName} component={StatisticScreen} />
 				<Tab.Screen name={ThresholdName} component={ThresholdScreen} />
 			</Tab.Navigator>
