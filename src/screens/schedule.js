@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
 	View,
 	Text,
@@ -14,6 +14,7 @@ import ToggleSwitch from "../components/ToggleSwitch";
 import NewIcon from "../components/newIcon";
 import { LinearGradient } from "expo-linear-gradient";
 import axios from "axios";
+import Dialog from "react-native-dialog";
 
 const BACKEND_API = "https://smart-house-api.onrender.com";
 const DEFAULT_SCHEDULE_LIST = [
@@ -58,7 +59,10 @@ const ScheduleScreen = ({navigation}) => {
 			.catch((error) => {
 				console.log(error)
 			})
-	}, [scheduleList])
+	}, [scheduleList]);
+
+	const [dialogVisible, setDialogVisible] = useState(false);
+	const scheduleIdRef = useRef(null);
 
 	function getHourIn24Hours(hour) {
 		return hour >= 10 ? hour.toString() : "0" + hour.toString();
@@ -175,6 +179,34 @@ const ScheduleScreen = ({navigation}) => {
 		});
 	}
 
+	function pressScheduleItemLong(scheduleItem) {
+		scheduleIdRef.current = scheduleItem._id;
+		setDialogVisible(true);
+		
+	}
+
+	function pressDialogCancelButton() {
+		setDialogVisible(false);
+	}
+
+	function pressDialogDeleteButton() {
+		console.log(scheduleIdRef.current);
+		axios.delete(`${BACKEND_API}/schedules/${scheduleIdRef.current}`)
+			.then((response) => {
+				const newScheduleList = [];
+				scheduleList.forEach((schedule, index) => {
+					if (schedule._id !== response.data._id) {
+						newScheduleList.push(schedule);
+					}
+				});
+				setScheduleList(newScheduleList);
+			})
+			.catch((error) => {
+				console.log(error)
+			})
+		setDialogVisible(false);
+	}
+
 	return (
 		<View style={scheduleScreenStyle.container}>
 			<LinearGradient 
@@ -196,6 +228,30 @@ const ScheduleScreen = ({navigation}) => {
 					</TouchableOpacity>
 				</View>
 				<View style={scrollViewStyle.container}>
+					<View>
+						<Dialog.Container
+							visible={dialogVisible}
+						>
+							<Dialog.Title>
+								Delete schedule
+							</Dialog.Title>
+							<Dialog.Description>
+								Are you sure to delete this schedule?
+							</Dialog.Description>
+							<Dialog.Button 
+								label="Cancel" 
+								onPress={(e) => pressDialogCancelButton()}
+								bold={true}
+								color={"#004282"}
+							/>
+							<Dialog.Button 
+								label="Delete"
+								onPress={(e) => pressDialogDeleteButton()}
+							/>					
+
+						</Dialog.Container>
+					</View>
+					
 					<ScrollView 
 						style={scheduleStyle.container}
 						contentContainerStyle={scheduleStyle.contenContainer}
@@ -206,6 +262,7 @@ const ScheduleScreen = ({navigation}) => {
 							return (
 								<TouchableOpacity
 									onPress={(e) => pressScheduleItem(scheduleItem)}
+									onLongPress={(e) => pressScheduleItemLong(scheduleItem)}
 									key={idx}
 								>
 									<LinearGradient 
