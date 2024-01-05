@@ -5,6 +5,7 @@ import axios from "axios";
 import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import "../global";
+import { useFocusEffect } from "@react-navigation/native";
 
 import UserIcon from "../components/userIcon";
 import FanIcon from "../components/fanIcon";
@@ -60,22 +61,53 @@ const HomeScreen = ({ navigation }) => {
 	// 	setAdafruitIOKeyState(storedAdafruitIOKey);
 	// }, [adafruitIOModalVisible])
 
-	useEffect(() => {
-		const fetchAllData = async () => {
+	// useEffect(() => {
+	// 	const fetchAllData = async () => {
+	// 		try {
+	// 			// Fetch data initially
+	// 			await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.fan-speed/data/last", setFanEnabled);
+	// 			await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.light-switch/data/last", setLightEnabled);
+	// 			await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.temp/data/last", setTemp);
+	// 			await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.humid/data/last", setHumidity);
+
+	// 			// Set up interval to fetch data every 3 seconds
+	// 			const interval = setInterval(async () => {
+	// 				console.log("----------------------------------");
+	// 				await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.fan-speed/data/last", setFanEnabled);
+	// 				await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.light-switch/data/last", setLightEnabled);
+	// 				await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.temp/data/last", setTemp);
+	// 				await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.humid/data/last", setHumidity);
+
+	// 				console.log(fanEnabled, lightEnabled, temp, humidity);
+	// 			}, 3000);
+
+	// 			// Clean up interval on component unmount
+	// 			return () => clearInterval(interval);
+	// 		} catch (error) {
+	// 			console.error("Error in fetchAllData:", error);
+	// 		}
+	// 	};
+
+	// 	// Call the function that fetches all data
+	// 	fetchAllData();
+	// }, []);
+
+	useFocusEffect(
+		useCallback(() => {
 			try {
 				// Fetch data initially
-				await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.fan-speed/data/last", setFanEnabled);
-				await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.light-switch/data/last", setLightEnabled);
-				await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.temp/data/last", setTemp);
-				await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.humid/data/last", setHumidity);
+				fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.fan-speed/data/last", setFanEnabled);
+				fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.light-switch/data/last", setLightEnabled);
+				fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.temp/data/last", setTemp);
+				fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.humid/data/last", setHumidity);
 
 				// Set up interval to fetch data every 3 seconds
 				const interval = setInterval(async () => {
 					console.log("----------------------------------");
-					await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.fan-speed/data/last", setFanEnabled);
-					await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.light-switch/data/last", setLightEnabled);
-					await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.temp/data/last", setTemp);
-					await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.humid/data/last", setHumidity);
+					fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.fan-speed/data/last", setFanEnabled);
+					fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.light-switch/data/last", setLightEnabled);
+					fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.temp/data/last", setTemp);
+					fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.humid/data/last", setHumidity);
 
 					console.log(fanEnabled, lightEnabled, temp, humidity);
 				}, 3000);
@@ -85,11 +117,8 @@ const HomeScreen = ({ navigation }) => {
 			} catch (error) {
 				console.error("Error in fetchAllData:", error);
 			}
-		};
-
-		// Call the function that fetches all data
-		fetchAllData();
-	}, []);
+		}, []),
+	);
 
 	/* Used to load new fonts */
 	const [fontsLoaded, setFontsLoaded] = useFonts({

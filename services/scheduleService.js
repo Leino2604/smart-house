@@ -1,5 +1,6 @@
 //Will send data to adafruit feed to trigger when a time occured
 const axios = require("axios");
+require("../src/global");
 let aio_key = global.AdaFruitIOKey;
 
 const BACKEND_API = "https://smart-house-api.onrender.com";
@@ -98,6 +99,8 @@ const triggerSchedule = () => {
 		const currentTime = new Date();
 		const options = { timeZone: 'Asia/Ho_Chi_Minh', hour12: false };
 		console.log("Current Time in GMT+7:", currentTime.toLocaleString('en-US', options));
+		// console.log("Key: ", aio_key);
+		
 		// console.log(currentTime.getHours());
 		// console.log(currentTime.getMinutes());
 		// console.log(currentTime.getDate());
