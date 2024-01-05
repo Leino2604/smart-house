@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
 	View,
 	Text,
@@ -14,6 +14,7 @@ import ToggleSwitch from "../components/ToggleSwitch";
 import NewIcon from "../components/newIcon";
 import { LinearGradient } from "expo-linear-gradient";
 import axios from "axios";
+import Dialog from "react-native-dialog";
 
 const BACKEND_API = "https://smart-house-api.onrender.com";
 const DEFAULT_SCHEDULE_LIST = [
@@ -31,13 +32,12 @@ const DEFAULT_SCHEDULE_LIST = [
 	}
 ];
 const DEFAULT_NEW_SCHEDULE = {
-	hour: new Date().getHours(),
-	minute: new Date().getMinutes(),
+	hour: 7,
+	minute: 0,
 	date: new Date(),
 	notification: true,
-	fanDevice: "fan-spped",
+	fanDevice: "fan-speed",
 	lightDevice: "light-switch",
-	notification: false,
 	lightStatus: true,
 	fanSpeed: 20
 }
@@ -51,7 +51,7 @@ const ScheduleScreen = ({navigation}) => {
 				const newScheduleList = response.data.map((schedule) => {
 					return {
 						...schedule,
-						date: Date.parse(schedule.date)
+						date: new Date(schedule.date)
 					}
 				})
 				setScheduleList(newScheduleList);
@@ -59,7 +59,10 @@ const ScheduleScreen = ({navigation}) => {
 			.catch((error) => {
 				console.log(error)
 			})
-	}, [scheduleList])
+	}, [scheduleList]);
+
+	const [dialogVisible, setDialogVisible] = useState(false);
+	const scheduleIdRef = useRef(null);
 
 	function getHourIn24Hours(hour) {
 		return hour >= 10 ? hour.toString() : "0" + hour.toString();
@@ -91,13 +94,22 @@ const ScheduleScreen = ({navigation}) => {
 
 	function pressNewIcon(e) {
 		navigation.navigate("Edit schedule", {
-			schedule: DEFAULT_NEW_SCHEDULE,
-			created: true,
-			onSave: saveSchedule
+			onSave: saveSchedule,
+			year: DEFAULT_NEW_SCHEDULE.date.getFullYear(),
+			month: DEFAULT_NEW_SCHEDULE.date.getMonth(),
+			day: DEFAULT_NEW_SCHEDULE.date.getDay(),
+			hour: DEFAULT_NEW_SCHEDULE.hour,
+			minute: DEFAULT_NEW_SCHEDULE.minute,
+			lightDevice: DEFAULT_NEW_SCHEDULE.lightDevice,
+			fanDevice: DEFAULT_NEW_SCHEDULE.fanDevice,
+			lightStatus: DEFAULT_NEW_SCHEDULE.lightStatus,
+			fanSpeed: DEFAULT_NEW_SCHEDULE.fanSpeed,
+			notification: DEFAULT_NEW_SCHEDULE.notification,
+			id: null
 		});
 	}
 
-	function saveSchedule(savedSchedule, created) {
+	function saveSchedule(savedSchedule, id) {
 		function createNewSchedule(savedSchedule) {
 			axios.post(`${BACKEND_API}/schedules`, {
 				hour: savedSchedule.hour,
@@ -116,22 +128,24 @@ const ScheduleScreen = ({navigation}) => {
 			});
 		}
 
-		function modifySchedule(savedSchedule) {
-			console.log(savedSchedule.date)
-			console.log(typeof savedSchedule.date)
-			axios.put(`${BACKEND_API}/schedules/${savedSchedule._id}`, {
+		function modifySchedule(savedSchedule, id) {
+			console.log(id)
+			axios.put(`${BACKEND_API}/schedules/${id}`, {
 				hour: savedSchedule.hour,
 				minute: savedSchedule.minute,
 				date: savedSchedule.date,
-				fanDevice: "fan-speed",
-				lightDevice: "light-switch",
+				fanDevice: savedSchedule.fanDevice,
+				lightDevice: savedSchedule.lightDevice,
 				fanSpeed: savedSchedule.fanSpeed,
 				lightStatus: savedSchedule.lightStatus,
 				notification: savedSchedule.notification
 			}).then((response) => {
 				const newScheduleList = scheduleList.map((item) => {
 					if (item._id === savedSchedule._id) { 
-						return savedSchedule;
+						return {
+							...response.data,
+							date: new Date(response.data.date)
+						}
 					} else {
 						return item;
 					}
@@ -141,30 +155,56 @@ const ScheduleScreen = ({navigation}) => {
 				console.log(error);
 			})
 		}
-		if (created) {
+		if (Object.is(id, null)) {
 			createNewSchedule(savedSchedule);
 		} else {
-			modifySchedule(savedSchedule);
+			modifySchedule(savedSchedule, id);
 		}
 	}
 
 	function pressScheduleItem(scheduleItem) {
 		navigation.navigate("Edit schedule", {
-			schedule: {
-				hour: scheduleItem.hour,
-				minute: scheduleItem.minute,
-				date: new Date(scheduleItem.date),
-				notification: true,
-				fanDevice: "fan-spped",
-				lightDevice: "light-switch",
-				notification: scheduleItem.notification,
-				lightStatus: scheduleItem.lightStatus,
-				fanSpeed: scheduleItem.fanSpeed,
-				repeat: ["Mon", "Wed", "Sat", "Sun"]
-			},
-			created: false,
-			onSave: saveSchedule
+			onSave: saveSchedule,
+			year: scheduleItem.date.getFullYear(),
+			month: scheduleItem.date.getMonth(),
+			day: scheduleItem.date.getDay(),
+			hour: scheduleItem.hour,
+			minute: scheduleItem.minute,
+			lightDevice: scheduleItem.lightDevice,
+			fanDevice: scheduleItem.fanDevice,
+			lightStatus: scheduleItem.lightStatus,
+			fanSpeed: scheduleItem.fanSpeed,
+			notification: scheduleItem.notification,
+			id: scheduleItem._id 
 		});
+	}
+
+	function pressScheduleItemLong(scheduleItem) {
+		scheduleIdRef.current = scheduleItem._id;
+		setDialogVisible(true);
+		
+	}
+
+	function pressDialogCancelButton() {
+		setDialogVisible(false);
+	}
+
+	function pressDialogDeleteButton() {
+		console.log(scheduleIdRef.current);
+		axios.delete(`${BACKEND_API}/schedules/${scheduleIdRef.current}`)
+			.then((response) => {
+				const newScheduleList = [];
+				scheduleList.forEach((schedule, index) => {
+					if (schedule._id !== response.data._id) {
+						newScheduleList.push(schedule);
+					}
+				});
+				setScheduleList(newScheduleList);
+			})
+			.catch((error) => {
+				console.log(error)
+			})
+		setDialogVisible(false);
 	}
 
 	return (
@@ -188,6 +228,30 @@ const ScheduleScreen = ({navigation}) => {
 					</TouchableOpacity>
 				</View>
 				<View style={scrollViewStyle.container}>
+					<View>
+						<Dialog.Container
+							visible={dialogVisible}
+						>
+							<Dialog.Title>
+								Delete schedule
+							</Dialog.Title>
+							<Dialog.Description>
+								Are you sure to delete this schedule?
+							</Dialog.Description>
+							<Dialog.Button 
+								label="Cancel" 
+								onPress={(e) => pressDialogCancelButton()}
+								bold={true}
+								color={"#004282"}
+							/>
+							<Dialog.Button 
+								label="Delete"
+								onPress={(e) => pressDialogDeleteButton()}
+							/>					
+
+						</Dialog.Container>
+					</View>
+					
 					<ScrollView 
 						style={scheduleStyle.container}
 						contentContainerStyle={scheduleStyle.contenContainer}
@@ -198,6 +262,7 @@ const ScheduleScreen = ({navigation}) => {
 							return (
 								<TouchableOpacity
 									onPress={(e) => pressScheduleItem(scheduleItem)}
+									onLongPress={(e) => pressScheduleItemLong(scheduleItem)}
 									key={idx}
 								>
 									<LinearGradient 
