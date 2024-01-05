@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
 	View,
 	StyleSheet,
@@ -17,7 +17,9 @@ import WheelPicker from "react-native-wheely";
 import FanIcon from "../components/fanIcon";
 import LightBulbIcon from "../components/lightBulbIcon";
 import CalendarIcon from "../components/calendarIcon";
+import axios from "axios";
 
+const BACKEND_API = "https://smart-house-api.onrender.com";
 const HOURS = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"];
 const MINUTES = [
 	"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11",
@@ -30,35 +32,34 @@ const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Frida
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 const EditScheduleScreen = ({navigation, route}) => {
-	const {schedule, created, onSave, other} = route.params
-	/* Used to config calendar */
-	function getMinimumDate(date) {
-		newDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-		newDate.setMonth(newDate.getMonth() - 1);
-		return newDate;
-	}
-	function getMaximumDate(date) {
-		newDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-		newDate.setFullYear(newDate.getFullYear() + 1);
-		return newDate;
-	}
-
-	const [currSchedule, setCurrSchedule] = useState(schedule);
-	const MINIMUM_DATE = getMinimumDate(currSchedule.date);
-	const MAXIMUM_DATE = getMaximumDate(currSchedule.date);
-
-	const [smartLightEnabled, setSmartLightEnabled] = useState(false);
-	const [notificationEnabled, setNotificationEnabled] = useState(false);
+	const {onSave, year, month, day, hour, minute, lightDevice, fanDevice, lightStatus, fanSpeed, notification, id} = route.params
+	
+	const [currSchedule, setCurrSchedule] = useState({
+		hour: hour,
+		minute: minute,
+		date: new Date(year, month, day),
+		notification: notification,
+		fanDevice: fanDevice,
+		lightDevice: lightDevice,
+		lightStatus: lightStatus,
+		fanSpeed: fanSpeed
+	});
 	const [calendarVisible, setCalendarVisible] = useState(false);
-
-	/* Used to config time scroll picker*/
 	
 	function toggleSmartLightSwitch() {
-		setSmartLightEnabled((preState) => !preState);
+		const newSchedule = {
+			...currSchedule,
+			lightStatus: !currSchedule.lightStatus
+		};
+		setCurrSchedule(newSchedule);
 	}
 
 	function toggleNotificationEnabledSwitch() {
-		setNotificationEnabled((prevState) => !prevState);
+		const newSchedule = {
+			...currSchedule,
+			notification: !currSchedule.notification
+		};
+		setCurrSchedule(newSchedule);
 	}
 
 	function pressCalendarIcon() {
@@ -105,12 +106,13 @@ const EditScheduleScreen = ({navigation, route}) => {
 		setCurrSchedule(newSchedule);
 	}
 
-	function pressSaveButton(schedule, created) {
-		onSave(schedule, created);
+	function pressSaveButton(schedule, id) {
+		onSave(schedule, id);
 		navigation.navigate("Schedule", {});
 	}
 
-	return (	
+
+	return (
 		<View 
 			style={editScheduleScreenViewStyle.container}
 		>
@@ -127,7 +129,7 @@ const EditScheduleScreen = ({navigation, route}) => {
 				>
 					<WheelPicker 
 						options={HOURS}
-						selectedIndex={currSchedule.date.getHours()}
+						selectedIndex={currSchedule.hour}
 						onChange={(hour) => scrollHour(hour)}
 						containerStyle={timePickerStyle.itemContainer}
 						itemTextStyle={timePickerStyle.text}
@@ -139,7 +141,7 @@ const EditScheduleScreen = ({navigation, route}) => {
 
 					<WheelPicker 
 						options={MINUTES}
-						selectedIndex={currSchedule.date.getMinutes()}
+						selectedIndex={currSchedule.minute}
 						onChange={(minute) => scrollMinute(minute)}
 						containerStyle={timePickerStyle.itemContainer}
 						itemTextStyle={timePickerStyle.text}
@@ -159,8 +161,6 @@ const EditScheduleScreen = ({navigation, route}) => {
 						<DateTimePickerModal
 							mode="date"
 							display="calendar"
-							minimumDate={MINIMUM_DATE}
-							maximumDate={MAXIMUM_DATE}
 							is24Hour={true}
 							isDarkModeEnabled={true}
 							isVisible={calendarVisible}
@@ -214,7 +214,7 @@ const EditScheduleScreen = ({navigation, route}) => {
 							Smart light
 						</Text>
 						<ToggleSwitch
-							value={smartLightEnabled}
+							value={currSchedule.lightStatus}
 							onValueChange={toggleSmartLightSwitch}
 							backgroundActive={"#90EE90"}
 							backgroundInactive={"#FFFFFF"}
@@ -245,7 +245,7 @@ const EditScheduleScreen = ({navigation, route}) => {
 						containerStyle={
 							notificationChangeToggleSwitch.container
 						}
-						value={notificationEnabled}
+						value={currSchedule.notification}
 						onValueChange={toggleNotificationEnabledSwitch}
 						switchWidth={35}
 						switchHeight={30}
@@ -286,7 +286,7 @@ const EditScheduleScreen = ({navigation, route}) => {
 					>
 						<TouchableOpacity 
 							style={saveButtonStyle.container}
-							onPress={(e) => pressSaveButton(currSchedule, created)}
+							onPress={(e) => pressSaveButton(currSchedule, id)}
 						>
 							<Text style={saveButtonStyle.text}>Save</Text>
 						</TouchableOpacity>
