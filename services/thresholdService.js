@@ -1,5 +1,5 @@
 const axios = require("axios");
-const aio_key = "aio_fClV25jxEPfNzb2KUmpTMtpBthHL";
+let aio_key = global.AdaFruitIOKey;
 
 const BACKEND_API = "https://smart-house-api.onrender.com";
 let temp = 0.0,
@@ -23,6 +23,8 @@ const fetchThresholdData = async () => {
 // --Get newest sensor data featuring temp, humid, distance
 const fetchEnvironmentSensorData = async (tempSensor, humidSensor, distanceSensor) => {
 	try {
+		aio_key = global.AdaFruitIOKey;
+
 		const headers = {
 			"X-AIO-Key": aio_key,
 			"Content-Type": "application/json",
@@ -69,6 +71,8 @@ const fetchPIRSensorData = async (pirSensor) => {
 		return;
 	}
 	try {
+		aio_key = global.AdaFruitIOKey;
+
 		const headers = {
 			"X-AIO-Key": aio_key,
 			"Content-Type": "application/json",
@@ -87,6 +91,8 @@ const sendLightData = async (lightDevice, lightValue) => {
 		return;
 	}
 	try {
+		aio_key = global.AdaFruitIOKey;
+
 		const headers = {
 			"X-AIO-Key": aio_key,
 			"Content-Type": "application/json",
@@ -114,6 +120,8 @@ const sendFanData = async (fanDevice, fanValue) => {
 		return;
 	}
 	try {
+		aio_key = global.AdaFruitIOKey;
+		
 		const headers = {
 			"X-AIO-Key": aio_key,
 			"Content-Type": "application/json",
