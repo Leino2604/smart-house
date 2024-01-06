@@ -39,7 +39,7 @@ const thresholdSchema = new mongoose.Schema({
 		required: false,
 		enum: [0, 20, 40, 60, 80, 100],
 	},
-	lightStatuswhenReached: {
+	lightStatusWhenReached: {
 		type: Boolean,
 		required: false,
 	},
