@@ -131,12 +131,13 @@ export default function StatisticScreen({ navigation }) {
 							}}
 						/>
 					) : (
-						<Text>Loading...</Text>
+						<View style={{ width: "100%", height: 150, alignItems: "center", justifyContent: "center" }}>
+							<Text style={{ fontSize: 30 }}>Loading...</Text>
+						</View>
 					)}
 				</ScrollView>
 
-
-                <Text style={{ fontWeight: "bold", textAlign: "center", fontSize: 30 }}>Temperature Line Chart</Text>
+				<Text style={{ fontWeight: "bold", textAlign: "center", fontSize: 30 }}>Temperature Line Chart</Text>
 				<ScrollView horizontal={true}>
 					{data["temp"] ? (
 						<LineChart
@@ -178,12 +179,13 @@ export default function StatisticScreen({ navigation }) {
 							}}
 						/>
 					) : (
-						<Text>Loading...</Text>
+						<View style={{ width: "100%", height: 150, alignItems: "center", justifyContent: "center" }}>
+							<Text style={{ fontSize: 30 }}>Loading...</Text>
+						</View>
 					)}
 				</ScrollView>
 
-
-                <Text style={{ fontWeight: "bold", textAlign: "center", fontSize: 30 }}>Humidity Line Chart</Text>
+				<Text style={{ fontWeight: "bold", textAlign: "center", fontSize: 30 }}>Humidity Line Chart</Text>
 				<ScrollView horizontal={true}>
 					{data["humid"] ? (
 						<LineChart
@@ -225,12 +227,13 @@ export default function StatisticScreen({ navigation }) {
 							}}
 						/>
 					) : (
-						<Text>Loading...</Text>
+						<View style={{ width: "100%", height: 150, alignItems: "center", justifyContent: "center" }}>
+							<Text style={{ fontSize: 30 }}>Loading...</Text>
+						</View>
 					)}
 				</ScrollView>
 
-
-                <Text style={{ fontWeight: "bold", textAlign: "center", fontSize: 30 }}>Fan Speed Line Chart</Text>
+				<Text style={{ fontWeight: "bold", textAlign: "center", fontSize: 30 }}>Fan Speed Line Chart</Text>
 				<ScrollView horizontal={true}>
 					{data["fan-speed"] ? (
 						<LineChart
@@ -272,12 +275,13 @@ export default function StatisticScreen({ navigation }) {
 							}}
 						/>
 					) : (
-						<Text>Loading...</Text>
+						<View style={{ width: "100%", height: 150, alignItems: "center", justifyContent: "center" }}>
+							<Text style={{ fontSize: 30 }}>Loading...</Text>
+						</View>
 					)}
 				</ScrollView>
 
-
-                <Text style={{ fontWeight: "bold", textAlign: "center", fontSize: 30 }}>Light Switch Line Chart</Text>
+				<Text style={{ fontWeight: "bold", textAlign: "center", fontSize: 30 }}>Light Switch Line Chart</Text>
 				<ScrollView horizontal={true}>
 					{data["light-switch"] ? (
 						<LineChart
@@ -296,7 +300,7 @@ export default function StatisticScreen({ navigation }) {
 							yAxisSuffix=""
 							verticalLabelRotation={45}
 							yAxisInterval={1} // optional, defaults to 1
-                            // segments={1}
+							// segments={1}
 							chartConfig={{
 								backgroundColor: "#000FFF",
 								backgroundGradientFrom: "#00FFFF",
@@ -320,7 +324,9 @@ export default function StatisticScreen({ navigation }) {
 							}}
 						/>
 					) : (
-						<Text>Loading...</Text>
+						<View style={{ width: "100%", height: 150, alignItems: "center", justifyContent: "center" }}>
+							<Text style={{ fontSize: 30, textAlign: 'center' }}>Loading...</Text>
+						</View>
 					)}
 				</ScrollView>
 			</ScrollView>

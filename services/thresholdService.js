@@ -1,4 +1,5 @@
 const axios = require("axios");
+require("../src/global");
 let aio_key = global.AdaFruitIOKey;
 
 const BACKEND_API = "https://smart-house-api.onrender.com";
@@ -14,7 +15,7 @@ const fetchThresholdData = async () => {
 		const response = await axios.get(`${BACKEND_API}/thresholds`);
 		const thresholds = response.data;
 		data = thresholds;
-		console.log(data);
+		// console.log(data);
 		return thresholds;
 	} catch (error) {
 		handleError(error);
@@ -200,6 +201,7 @@ const triggerThreshold = async () => {
 					isPresent = true;
 				} else isPresent = false;
 
+				console.log("Threshold active. Id: ", item["_id"]);
 				console.log(
 					temp,
 					tempThreshold,
@@ -246,6 +248,7 @@ const triggerThreshold = async () => {
 
 		await checkThresholdReached();
 	}
+	console.log('_________________________');
 };
 
 // triggerThreshold();

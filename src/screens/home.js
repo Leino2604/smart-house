@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import MenuBar from "../components/menu";
-import { ScrollView, StatusBar, View, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { ScrollView, StatusBar, View, StyleSheet, Text, TouchableOpacity, ToastAndroid, Switch } from "react-native";
 import axios from "axios";
 import { LinearGradient } from "expo-linear-gradient";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import "../global";
 import { useFocusEffect } from "@react-navigation/native";
+import Slider from "@react-native-community/slider";
 
 import UserIcon from "../components/userIcon";
 import FanIcon from "../components/fanIcon";
@@ -20,23 +19,13 @@ import { useFonts } from "expo-font";
 
 const HomeScreen = ({ navigation }) => {
 	const [user, setUser] = useState(initialUser);
-	const [fanEnabled, setFanEnabled] = useState(false);
+	const [fanSpeed, setFanSpeed] = useState(0);
 	const [lightEnabled, setLightEnabled] = useState(false);
 	const [temp, setTemp] = useState(0.0);
 	const [humidity, setHumidity] = useState(0.0);
 
 	// const [adafruitIOKey, setAdafruitIOKeyState] = useState("aio_izxf20WAfwu9k1oYGMsVL4RGwXGH");
 	const [adafruitIOModalVisible, setAdafruitIOModalVisible] = useState(false);
-
-	// const getAdafruitIOKey = async () => {
-	// 	try {
-	// 		const storedAdafruitIOKey = await AsyncStorage.getItem("adafruitIOKey");
-	// 		return storedAdafruitIOKey || "";
-	// 	} catch (error) {
-	// 		console.error("Error retrieving adafruitIOKey from AsyncStorage:", error);
-	// 		return "";
-	// 	}
-	// };
 
 	const fetchData = async (url, setDataFunction) => {
 		let adafruitIOKey = global.AdaFruitIOKey;
@@ -48,24 +37,28 @@ const HomeScreen = ({ navigation }) => {
 			};
 
 			const response = await axios.get(url, { headers });
-			setDataFunction(response.data.value);
-			console.log(response.data.value);
+
+			if (setDataFunction == "setLightEnabled") {
+				response.data.value == 1 ? setLightEnabled(true) : setLightEnabled(false);
+			} else if (setDataFunction == "setFanSpeed") {
+				setFanSpeed(response.data.value);
+			} else if (setDataFunction == "setTemp") {
+				setTemp(response.data.value);
+			} else if (setDataFunction == "setHumidity") {
+				setHumidity(response.data.value);
+			}
+
+			// console.log(response.data.value);
 		} catch (error) {
 			console.error("Error fetching device & sensor data:", error);
 		}
 	};
 
 	// useEffect(() => {
-	// 	// Fetch Adafruit IO Key
-	// 	const storedAdafruitIOKey = getAdafruitIOKey();
-	// 	setAdafruitIOKeyState(storedAdafruitIOKey);
-	// }, [adafruitIOModalVisible])
-
-	// useEffect(() => {
-	// 	const fetchAllData = async () => {
+	// 	const fetchDataAndInterval = async () => {
 	// 		try {
 	// 			// Fetch data initially
-	// 			await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.fan-speed/data/last", setFanEnabled);
+	// 			await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.fan-speed/data/last", setFanSpeed);
 	// 			await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.light-switch/data/last", setLightEnabled);
 	// 			await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.temp/data/last", setTemp);
 	// 			await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.humid/data/last", setHumidity);
@@ -73,12 +66,12 @@ const HomeScreen = ({ navigation }) => {
 	// 			// Set up interval to fetch data every 3 seconds
 	// 			const interval = setInterval(async () => {
 	// 				console.log("----------------------------------");
-	// 				await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.fan-speed/data/last", setFanEnabled);
+	// 				await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.fan-speed/data/last", setFanSpeed);
 	// 				await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.light-switch/data/last", setLightEnabled);
 	// 				await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.temp/data/last", setTemp);
 	// 				await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.humid/data/last", setHumidity);
 
-	// 				console.log(fanEnabled, lightEnabled, temp, humidity);
+	// 				console.log(fanSpeed, lightEnabled, temp, humidity);
 	// 			}, 3000);
 
 	// 			// Clean up interval on component unmount
@@ -88,28 +81,28 @@ const HomeScreen = ({ navigation }) => {
 	// 		}
 	// 	};
 
-	// 	// Call the function that fetches all data
-	// 	fetchAllData();
+	// 	fetchDataAndInterval();
 	// }, []);
 
 	useFocusEffect(
 		useCallback(() => {
 			try {
-				// Fetch data initially
-				fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.fan-speed/data/last", setFanEnabled);
-				fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.light-switch/data/last", setLightEnabled);
-				fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.temp/data/last", setTemp);
-				fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.humid/data/last", setHumidity);
+				async () => {
+					// Fetch data initially
+					await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.fan-speed/data/last", "setFanSpeed");
+					await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.light-switch/data/last", "setLightEnabled");
+					await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.temp/data/last", "setTemp");
+					await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.humid/data/last", "setHumidity");
+				};
 
 				// Set up interval to fetch data every 3 seconds
 				const interval = setInterval(async () => {
+					await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.fan-speed/data/last", "setFanSpeed");
+					await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.light-switch/data/last", "setLightEnabled");
+					await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.temp/data/last", "setTemp");
+					await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.humid/data/last", "setHumidity");
 					console.log("----------------------------------");
-					fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.fan-speed/data/last", setFanEnabled);
-					fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.light-switch/data/last", setLightEnabled);
-					fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.temp/data/last", setTemp);
-					fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.humid/data/last", setHumidity);
-
-					console.log(fanEnabled, lightEnabled, temp, humidity);
+					console.log(fanSpeed, lightEnabled, temp, humidity);
 				}, 3000);
 
 				// Clean up interval on component unmount
@@ -117,7 +110,7 @@ const HomeScreen = ({ navigation }) => {
 			} catch (error) {
 				console.error("Error in fetchAllData:", error);
 			}
-		}, []),
+		}, [fanSpeed, lightEnabled, temp, humidity]),
 	);
 
 	/* Used to load new fonts */
@@ -138,12 +131,52 @@ const HomeScreen = ({ navigation }) => {
 	// 	loadFonts();
 	// }, [])
 
-	function handleFanEnabledToggleSwitch() {
-		setFanEnabled((currState) => !currState);
+	async function handleFanSpeed(fanValue) {
+		setFanSpeed(fanValue);
+		try {
+			aio_key = global.AdaFruitIOKey;
+
+			const headers = {
+				"X-AIO-Key": aio_key,
+				"Content-Type": "application/json",
+			};
+			const data = {
+				value: fanValue,
+			};
+			url = `https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.fan-speed/data`;
+			const response = await axios.post(url, data, { headers });
+			// console.log(response.data);
+			console.log(`Change fan device speed to ${fanValue}`);
+		} catch (error) {
+			ToastAndroid.show("Error changing fan speed", ToastAndroid.SHORT);
+			console.error("Error changing fan speed: ", error);
+			setFanSpeed(fanSpeed);
+		}
 	}
 
-	function handleLightEnabledToggleSwitch() {
-		setLightEnabled((currState) => !currState);
+	async function handleLightEnabledToggleSwitch(lightValue) {
+		// setLightEnabled((currState) => !currState);
+		setLightEnabled(lightValue);
+		try {
+			aio_key = global.AdaFruitIOKey;
+
+			const headers = {
+				"X-AIO-Key": aio_key,
+				"Content-Type": "application/json",
+			};
+			const data = {
+				value: lightValue ? 1 : 0,
+			};
+			console.log("Light data:", data);
+			url = `https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.light-switch/data`;
+			const response = await axios.post(url, data, { headers });
+			// console.log(response.data);
+			console.log(`Change light switch status to ${lightValue}`);
+		} catch (error) {
+			ToastAndroid.show("Error changing light switch", ToastAndroid.SHORT);
+			console.error("Error changing light switch:", error);
+			setLightEnabled(lightEnabled);
+		}
 	}
 
 	function navigateToScreen(screenName) {
@@ -174,20 +207,21 @@ const HomeScreen = ({ navigation }) => {
 							>
 								<View style={fanStyle.content}>
 									<FanIcon />
-									<ToggleSwitch
-										value={fanEnabled}
-										onValueChange={handleFanEnabledToggleSwitch}
-										activeText={"On"}
-										inactiveText={"Off"}
-										activeTextStyle={fanEnabledToggleSwitchStyle.activeText}
-										inactiveTextStyle={fanEnabledToggleSwitchStyle.inactiveText}
-										backgroundInactive={"#FFFFFF"}
-										backgroundActive={"#90EE90"}
-										containerStyle={fanEnabledToggleSwitchStyle.container}
-										circleInActiveColor={"#FFFFFF"}
+									<Slider
+										style={sliderStyle}
+										minimumValue={0}
+										maximumValue={100}
+										step={20}
+										thumbTintColor={"#006A64"}
+										value={fanSpeed}
+										maximumTrackTintColor={"#ADD8E6"}
+										onValueChange={(value) => handleFanSpeed(value)}
 									/>
 								</View>
-								<Text style={fanStyle.title}>Smart Fan</Text>
+								<View style={{display: 'flex', flexDirection: 'row'}}>
+									<Text style={fanStyle.title}>Smart Fan</Text>
+									<Text style={value.fanSpeed}>{fanSpeed}</Text>
+								</View>
 							</LinearGradient>
 							<LinearGradient
 								style={lightStyle.container}
@@ -198,9 +232,9 @@ const HomeScreen = ({ navigation }) => {
 							>
 								<View style={lightStyle.content}>
 									<LightBulbIcon />
-									<ToggleSwitch
+									{/* <ToggleSwitch
 										value={lightEnabled}
-										onValueChange={handleLightEnabledToggleSwitch}
+										onValueChange={(value) => handleLightEnabledToggleSwitch(value)}
 										activeText={"On"}
 										inactiveText={"Off"}
 										activeTextStyle={lightEnabledToggleSwitchStyle.activeText}
@@ -209,7 +243,8 @@ const HomeScreen = ({ navigation }) => {
 										backgroundActive={"#90EE90"}
 										containerStyle={lightEnabledToggleSwitchStyle.container}
 										circleInActiveColor={"#FFFFFF"}
-									/>
+									/> */}
+									<Switch value={lightEnabled} onValueChange={(value) => handleLightEnabledToggleSwitch(value)} />
 								</View>
 								<Text style={lightStyle.title}>Smart Light</Text>
 							</LinearGradient>
@@ -253,6 +288,12 @@ const HomeScreen = ({ navigation }) => {
 		</View>
 	);
 };
+
+const sliderStyle = StyleSheet.create({
+	width: 200,
+	height: 40,
+	margin: 10,
+});
 
 const styles = StyleSheet.create({
 	modalContainer: {
@@ -340,14 +381,14 @@ const fanStyle = StyleSheet.create({
 		borderWidth: 1,
 		backgroundColor: "#FFFFFF",
 		borderRadius: 10,
-		gap: 51,
+		gap: 21,
 	},
 	content: {
 		display: "flex",
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "center",
-		gap: 194, // TODO: relative unit
+		gap: 54, // TODO: relative unit
 		marginTop: 33, // TODO: relative unit
 	},
 	title: {
@@ -468,6 +509,11 @@ const value = StyleSheet.create({
 		// marginLeft: 'auto',  // Đẩy sang bên phải
 		color: "#E5E5E5",
 		fontSize: 20,
+	},
+	fanSpeed: {
+		color: "#E5E5E5",
+		fontSize: 20,
+		marginLeft: 170,
 	},
 });
 

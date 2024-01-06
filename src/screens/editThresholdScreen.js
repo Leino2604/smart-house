@@ -10,7 +10,6 @@ const BACKEND_API = "https://smart-house-api.onrender.com";
 export default function EditThresholdScreen({ navigation, route }) {
 	const { threshold } = route.params; // Lấy threshold từ params nếu có
 
-	// State variables for the inputs and switches
 	const [temp, setTemp] = useState(threshold ? threshold.temp.$numberDecimal : 0); // Nếu có threshold thì lấy giá trị từ đó, nếu không thì mặc định là 0
 	const [humid, setHumid] = useState(threshold ? threshold.humid.$numberDecimal : 0);
 	const [distance, setDistance] = useState(threshold ? threshold.distance : 0);
@@ -74,6 +73,7 @@ export default function EditThresholdScreen({ navigation, route }) {
 			fanSpeedWhenReached,
 			fanSpeedOriginal,
 		};
+		console.log(newThreshold);
 		try {
 			// Nếu AddFlag là true thì gọi API để thêm mới, nếu không thì gọi API để cập nhật
 			if (addFlag == true) {
