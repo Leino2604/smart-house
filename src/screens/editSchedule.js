@@ -163,7 +163,7 @@ const EditScheduleScreen = ({ navigation, route }) => {
 	return (
 		<View style={editScheduleScreenViewStyle.container}>
 			<LinearGradient style={editScheduleViewStyle.container} colors={["#004282", "#5899e2"]}>
-				<ScrollView>
+				{/* <ScrollView> */}
 					<StatusBar barStyle={"light-content"} />
 
 					<View style={timePickerStyle.container}>
@@ -304,7 +304,7 @@ const EditScheduleScreen = ({ navigation, route }) => {
 							</TouchableOpacity>
 						</LinearGradient>
 					</View>
-				</ScrollView>
+				{/* </ScrollView> */}
 			</LinearGradient>
 		</View>
 	);

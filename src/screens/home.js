@@ -103,7 +103,7 @@ const HomeScreen = ({ navigation }) => {
 					await fetchData("https://io.adafruit.com/api/v2/dadnhk231nhom9/feeds/group-9.humid/data/last", "setHumidity");
 					console.log("----------------------------------");
 					console.log(fanSpeed, lightEnabled, temp, humidity);
-				}, 3000);
+				}, 1500);
 
 				// Clean up interval on component unmount
 				return () => clearInterval(interval);
@@ -258,7 +258,7 @@ const HomeScreen = ({ navigation }) => {
 							>
 								<View style={thermometerStyle.content}>
 									<ThermometerIcon />
-									<Text style={value.tempValue}>{temp}</Text>
+									<Text style={value.tempValue}>{temp}°C</Text>
 								</View>
 								<Text style={fanStyle.title}>Temperature</Text>
 							</LinearGradient>
